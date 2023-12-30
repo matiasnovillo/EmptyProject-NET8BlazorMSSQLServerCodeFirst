@@ -9,14 +9,16 @@ namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
         {
             try
             {
-                //UserId (clave principal autoincremental)
+                //UserId
                 entity.HasKey(e => e.UserId);
                 entity.Property(e => e.UserId)
                     .ValueGeneratedOnAdd();
 
+                //Email
                 entity.Property(e => e.Email)
                     .HasMaxLength(380);
 
+                //Password
                 entity.Property(e => e.Password);
             }
             catch (Exception)

@@ -3,7 +3,8 @@
 @using EmptyProject.Areas.CMSCore.Repositories;
 @using EmptyProject.Components.Shared;
 @inject UserRepository userRepository;
-@inject StateContainer StateContainer
+@inject StateContainer StateContainer;
+@inject NavigationManager NavigationManager;
 
 <PageTitle>Login - EmptyProject</PageTitle>
 
@@ -51,8 +52,12 @@
             <div class="card mt-8">
                 <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                     <div class="bg-gradient-success shadow-success border-radius-lg py-3 pe-1 text-center py-4">
-                        <h4 class="font-weight-bolder text-white mt-1">Sign In</h4>
-                        <p class="mb-1 text-sm text-white">Enter your email and password to Sign In</p>
+                        <h4 class="font-weight-bolder text-white mt-1">
+                            Sign in
+                        </h4>
+                        <p class="mb-1 text-sm text-white">
+                            Enter your email and password to Sign in
+                        </p>
                     </div>
                 </div>
                 <div class="card-body">
@@ -65,10 +70,12 @@
                                 <i class="fas fa-envelope"></i>&nbsp;
                                 Email
                             </label>
-                            <InputText @bind-Value="User!.Email"
-                                        type="email" id="email"
-                                        class="form-control"
-                                        placeholder="user@example.com" />
+                            <input 
+                                type="email" 
+                                id="email"
+                                   class="form-control @(ValidEmail)"
+                                   @onchange="HandleEmailChange"
+                                placeholder="user@example.com" />
                         </div>
                         <div class="mb-3">
                             <label for="password"
@@ -76,10 +83,10 @@
                                 <i class="fas fa-key"></i>&nbsp;
                                 Password
                             </label>
-                            <InputText type="password"
-                                       @bind-Value="User!.Password"
-                                       class="form-control"
-                                       id="password" />
+                            <input type="password"
+                                class="form-control @(ValidPassword)"
+                                @onchange="HandlePasswordChange"
+                                id="password" />
                         </div>
                         <div class="container text-center">
                             <button id="btn-login" type="submit"
@@ -100,7 +107,10 @@
                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
                     <p class="mb-4 text-sm mx-auto">
                         Don't have an account?
-                        <a href="javascript:;" class="text-success text-gradient font-weight-bold">Sign up</a>
+                        <a href="javascript:;" 
+                        class="text-success text-gradient font-weight-bold">
+                            Sign up
+                        </a>
                     </p>
                 </div>
             </div>
@@ -116,6 +126,10 @@
     public string MessageForLoginForm { get; set; } = "";
 
     public bool Toggle { get; set; } = false;
+
+    public string ValidEmail { get; set; } = "";
+
+    public string ValidPassword { get; set; } = "";
     #endregion
 
     protected override void OnInitialized()
@@ -136,26 +150,19 @@
     }
 
     #region Events
-    private async void Submit()
+    private void Submit()
     {
         try
         {
-            //Validations
-            if (User!.Email == "" || User!.Password == "")
-            {
-                MessageForLoginForm = $@"<i class=""fas fa-exclamation""></i>
-                                        Completa todos los campos";
-                return;
-            }
-
             //Encrypt password
-            string EncryptedPassword = new CommonFunctions.CommonFunctions().EncodeString(User.Password);
+            string EncryptedPassword = EmptyProject.Library.Security
+                                            .EncodeString(User.Password);
 
             //Get user by email and password
-            User = userRepository.
-            GetByEmailAndPassword(User.Email,
-                EncryptedPassword,
-                CancellationToken.None);
+            User = userRepository
+                        .GetByEmailAndPassword(User.Email,
+                        EncryptedPassword,
+                        CancellationToken.None);
 
             //Next if is to quit null value from User
             if (User == null)
@@ -168,6 +175,9 @@
                 //User found
                 StateContainer.User = User;
                 Toggle = true;
+
+                //Redirect to...
+                NavigationManager.NavigateTo("Dashboard");
             }
             else
             {
@@ -182,6 +192,32 @@
             MessageForLoginForm = $@"<i class=""fas fa-exclamation""></i>
                                     Hubo un error. Intenta nuevamente.
                                     Mensaje de error: {ex.Message}";
+        }
+    }
+
+    private void HandleEmailChange(ChangeEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(e.Value?.ToString()))
+        {
+            ValidEmail = "is-invalid";
+        }
+        else
+        {
+            ValidEmail = "is-valid";
+            User.Email = e.Value?.ToString();
+        }
+    }
+
+    private void HandlePasswordChange(ChangeEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(e.Value?.ToString()))
+        {
+            ValidPassword = "is-invalid";
+        }
+        else
+        {
+            ValidPassword = "is-valid";
+            User.Password = e.Value?.ToString();
         }
     }
 

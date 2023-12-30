@@ -26,8 +26,6 @@
 
   <ItemGroup>
     <Folder Include="Backup\" />
-    <Folder Include="Entities\" />
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

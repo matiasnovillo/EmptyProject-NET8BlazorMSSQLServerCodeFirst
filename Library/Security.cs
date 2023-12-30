@@ -11,17 +11,23 @@ namespace EmptyProject.Library
         /// 1. Used to encode passwords or sensible data. For more security ensure to pass UserName + UserPassword inside StringToEncode <br/>
         /// 2. One way encoding, that means that there is no way to decode the encoded string <br/>
         /// 3. Extremely secure if the input StringToEncode contains a unique ID, actual time or any kind of unpredictable data.
-        /// <param name="StringToEncode"></param>
+        /// <param name="stringToEncode"></param>
         /// <returns></returns>
         [Obsolete]
-        public static string EncodeString(string StringToEncode)
+        public static string EncodeString(string stringToEncode)
         {
             try
             {
-                UnicodeEncoding Encoder = new UnicodeEncoding();
-                SHA512Managed SHA512 = new SHA512Managed();
+                if (stringToEncode == "")
+                {
+                    return "";   
+                }
 
-                string EncodedString = Convert.ToBase64String(SHA512.ComputeHash(Encoder.GetBytes(StringToEncode)));
+                UnicodeEncoding Encoder = new();
+
+                string EncodedString = Convert
+                    .ToBase64String(SHA512
+                    .HashData(Encoder.GetBytes(stringToEncode)));
 
                 return EncodedString;
             }
