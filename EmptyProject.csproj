@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <Folder Include="Backup\" />
+    <Folder Include="CommonFunctions\" />
   </ItemGroup>
 
 </Project>

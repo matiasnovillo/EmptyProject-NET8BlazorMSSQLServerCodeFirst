@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
-using EmptyProject.CommonFunctions.DTOs;
 using EmptyProject.Areas.CMSCore.Entities;
 using EmptyProject.Areas.BasicCore.Entities.Configuration;
+using EmptyProject.Areas.CMSCore.DTOs;
 
 namespace EmptyProject.Areas.CMSCore.Repositories
 {
@@ -17,18 +17,18 @@ namespace EmptyProject.Areas.CMSCore.Repositories
 
         public IQueryable<UserEntity> AsQueryable()
         {
-            return _context.User.AsQueryable();
+            return _context.DbSetUser.AsQueryable();
         }
 
         #region Queries
         public async Task<int> Count(CancellationToken cancellationToken)
         {
-            return await _context.User.CountAsync();
+            return await _context.DbSetUser.CountAsync();
         }
 
         public UserEntity? GetById(int userId, CancellationToken cancellationToken)
         {
-            return _context.User.FirstOrDefault(u => u.UserId == userId);
+            return _context.DbSetUser.FirstOrDefault(u => u.UserId == userId);
         }
 
         public List<UserEntity?> GetAll(CancellationToken cancellationToken)
@@ -36,7 +36,7 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             List<UserEntity?> lstUser = [];
 
             var GetAllQuery =
-                    from x in _context.User
+                    from x in _context.DbSetUser
                     select new
                     {
                         x.UserId,
@@ -62,7 +62,7 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             string password, 
             CancellationToken cancellationToken)
         {
-            return _context.User.AsQueryable()
+            return _context.DbSetUser.AsQueryable()
                 .Where(u => u.Password == password)
                 .Where(u => u.Email == email)
                 .FirstOrDefault();
@@ -112,9 +112,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                 .Trim(), @"\s+", " ")
                 .Split(" ");
 
-            int TotalUser = await _context.User.CountAsync();
+            int TotalUser = await _context.DbSetUser.CountAsync();
 
-            var paginatedUser = await _context.User
+            var paginatedUser = await _context.DbSetUser
                     .Where(x => strictSearch ?
                         words.All(word => x.Email.Contains(word)) :
                         words.Any(word => x.Email.Contains(word)))
@@ -137,14 +137,14 @@ namespace EmptyProject.Areas.CMSCore.Repositories
         public async Task<bool> Add(UserEntity user, 
             CancellationToken cancellationToken)
         {
-            await _context.User.AddAsync(user, cancellationToken);
+            await _context.DbSetUser.AddAsync(user, cancellationToken);
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 
         public async Task<bool> Update(UserEntity user, 
             CancellationToken cancellationToken)
         {
-            _context.User.Update(user);
+            _context.DbSetUser.Update(user);
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 

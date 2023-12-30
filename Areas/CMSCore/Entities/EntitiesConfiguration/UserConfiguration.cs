@@ -16,10 +16,12 @@ namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
 
                 //Email
                 entity.Property(e => e.Email)
+                    .IsRequired(false)
                     .HasMaxLength(380);
 
                 //Password
-                entity.Property(e => e.Password);
+                entity.Property(e => e.Password)
+                    .IsRequired(false);
             }
             catch (Exception)
             {
