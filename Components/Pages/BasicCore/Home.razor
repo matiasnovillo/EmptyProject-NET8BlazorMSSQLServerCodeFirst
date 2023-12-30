@@ -1,0 +1,146 @@
+﻿@page "/"
+@using EmptyProject.Areas.CMSCore.Entities;
+@using EmptyProject.Areas.CMSCore.Repositories;
+@using EmptyProject.Components.Shared;
+@inject UserRepository userRepository;
+@inject StateContainer StateContainer
+
+<PageTitle>Home - EmptyProject</PageTitle>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white z-index-3 py-3">
+    <div class="container">
+        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            EmptyProject
+        </NavLink>
+        <button class="navbar-toggler shadow-none ms-2" 
+        type="button" 
+        data-bs-toggle="collapse" 
+        data-bs-target="#navigation" 
+        aria-controls="navigation" 
+        aria-expanded="false" 
+        aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon mt-2">
+                <span class="navbar-toggler-bar bar1"></span>
+                <span class="navbar-toggler-bar bar2"></span>
+                <span class="navbar-toggler-bar bar3"></span>
+            </span>
+        </button>
+        <div class="collapse navbar-collapse w-100 pt-3 pb-2 py-lg-0" 
+        id="navigation">
+            <ul class="navbar-nav navbar-nav-hover mx-auto">
+            </ul>
+
+            <ul class="navbar-nav d-lg-block d-none">
+                <li class="nav-item">
+                    <NavLink class="btn bg-gradient-primary mb-0 me-1" 
+                    href="Login">
+                        <i class="fas fa-user"></i>
+                        Login
+                    </NavLink>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<header>
+    <div class="page-header min-vh-75 rounded"
+    style="background-image: url('./assets/img/bg0.jpg')" 
+    loading="lazy">
+      <span class="mask bg-gradient-primary opacity-4"></span>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-7 text-center mx-auto">
+            <h1 class="display-1 text-white pt-3">
+                EmptyProject
+            </h1>
+            <h5 class="text-white mt-3 px-5">
+                Develop applications with the latest technologies on the market
+                such as Bootstrap 5, .NET 8, Blazor, EF Core, MS SQL Server
+            </h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+<div class="position-relative mt-8">
+    <div class="container">
+        <div class="card bg-gradient-dark z-index-3">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8 mx-auto text-center my-auto">
+                        <h3 class="text-white">Be the first who see the news</h3>
+                        <p class="text-white opacity-8 px-5">
+                            Your company may not be in the software business,
+                            but eventually, a software company will be in your business.
+                        </p>
+                        <div class="row">
+                            <div class="col-sm-5 ms-auto">
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Email here...</label>
+                                    <input type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-sm-3 ps-0 me-auto text-start">
+                                <button type="button" 
+                                    class="btn bg-white w-100 position-relative z-index-2">
+                                    Subscribe
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="footer pb-5 pt-8 bg-light mt-n5 position-relative">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3">
+                &nbsp;
+            </div>
+            <div class="col-lg-6 text-center">
+                <ul class="nav flex-row align-items-center mb-5 mt-sm-0 justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://www.creative-tim.com" target="_blank">
+                            Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://www.creative-tim.com/presentation" target="_blank">
+                            About
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://www.creative-tim.com/blog" target="_blank">
+                            Blog
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://www.creative-tim.com" target="_blank">
+                            Services
+                        </a>
+                    </li>
+                </ul>
+                <p class="mb-0">
+                    Empty project generated with FiyiStack
+                </p>
+            </div>
+            <div class="col-lg-3 text-end">
+                <a href="javascript:;" target="_blank" class="text-secondary me-xl-4 me-4">
+                    <span class="fab fa-dribbble text-lg"></span>
+                </a>
+                <a href="javascript:;" target="_blank" class="text-secondary me-xl-4 me-4">
+                    <span class="fab fa-twitter text-lg"></span>
+                </a>
+                <a href="javascript:;" target="_blank" class="text-secondary me-xl-4 me-4">
+                    <span class="fab fa-pinterest text-lg"></span>
+                </a>
+                <a href="javascript:;" target="_blank" class="text-secondary">
+                    <span class="fab fa-github text-lg"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>

@@ -1,7 +1,7 @@
+using EmptyProject.Areas.BasicCore.Entities.Configuration;
+using EmptyProject.Areas.CMSCore.Repositories;
 using EmptyProject.Components;
 using EmptyProject.Components.Shared;
-using EmptyProject.Entities.Configuration;
-using EmptyProject.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

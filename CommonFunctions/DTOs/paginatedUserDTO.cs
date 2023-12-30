@@ -1,10 +1,10 @@
-﻿using EmptyProject.Entities;
+﻿using EmptyProject.Areas.CMSCore.Entities;
 
 namespace EmptyProject.CommonFunctions.DTOs
 {
     public class paginatedUserDTO
     {
-        public List<User?> lstUser { get; set; }
+        public List<UserEntity?> lstUser { get; set; }
         public int TotalItems { get; set; }
         public int PageIndex { get; set; }
         public int PageSize { get; set; }

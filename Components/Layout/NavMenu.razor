@@ -1,6 +1,6 @@
-﻿@using EmptyProject.Entities
-@using EmptyProject.Components.Shared
-@inject StateContainer StateContainer
+﻿@using EmptyProject.Areas.CMSCore.Entities;
+@using EmptyProject.Components.Shared;
+@inject StateContainer StateContainer;
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -20,7 +20,7 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="users">
+            <NavLink class="nav-link" href="user">
                 <span class="fas fa-user" aria-hidden="true"></span>&nbsp;Usuarios
             </NavLink>
         </div>
