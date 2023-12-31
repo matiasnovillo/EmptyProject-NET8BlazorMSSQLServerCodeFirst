@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
 {
-    public class RoleMenuConfiguration : IEntityTypeConfiguration<RoleMenuEntity>
+    public class RoleMenuConfiguration : IEntityTypeConfiguration<RoleMenu>
     {
-        public void Configure(EntityTypeBuilder<RoleMenuEntity> entity)
+        public void Configure(EntityTypeBuilder<RoleMenu> entity)
         {
             try
             {

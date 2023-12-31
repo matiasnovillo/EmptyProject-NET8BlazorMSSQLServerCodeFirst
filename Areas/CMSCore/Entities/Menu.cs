@@ -1,6 +1,6 @@
 ﻿namespace EmptyProject.Areas.CMSCore.Entities
 {
-    public class MenuEntity
+    public class Menu
     {
         public int MenuId { get; set; }
         public string? Name { get; set; }

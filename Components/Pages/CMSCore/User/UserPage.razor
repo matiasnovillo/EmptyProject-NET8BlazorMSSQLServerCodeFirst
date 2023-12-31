@@ -64,7 +64,7 @@
                     <tbody>
                         @if (paginatedUserDTO != null)
                         {
-                            @foreach (UserEntity? user in paginatedUserDTO.lstUser)
+                            @foreach (User? user in paginatedUserDTO.lstUser)
                             {
                                 <tr>
                                     <td>@user?.UserId</td>
@@ -73,7 +73,7 @@
                                     <td>
                                         <div class="nav-item">
                                             <button class="btn btn-sm btn-outline-danger"
-                                                    onclick=@(() => Delete(@user!.UserId))>
+                                                    onclick=@(() => Delete(user!.UserId))>
                                                 <span class="fas fa-trash" aria-hidden="true"></span>
                                             </button>
                                         </div>
@@ -144,7 +144,7 @@ else
 
     public string SuccessMessage { get; set; } = "";
 
-    private UserEntity? User;
+    private User? User;
 
     paginatedUserDTO paginatedUserDTO;
     #endregion

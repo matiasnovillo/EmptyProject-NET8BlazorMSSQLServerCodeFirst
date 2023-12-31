@@ -13,6 +13,9 @@ builder.Services.AddDbContext<EFCoreContext>();
 
 //Set access to repositories
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<MenuRepository>();
+builder.Services.AddScoped<RoleMenuRepository>();
 
 //Set access to StateContainer to share data between Blazor components
 builder.Services.AddSingleton<StateContainer>();

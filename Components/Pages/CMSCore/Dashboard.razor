@@ -3,6 +3,9 @@
 @using EmptyProject.Areas.CMSCore.Repositories;
 @using EmptyProject.Components.Shared;
 @inject UserRepository userRepository;
+@inject RoleRepository roleRepository;
+@inject MenuRepository menuRepository;
+@inject RoleMenuRepository rolemenuRepository;
 @inject StateContainer StateContainer;
 @inject NavigationManager NavigationManager;
 
@@ -122,19 +125,28 @@ id="sidenav-main">
                     Pages
                 </h4>
                 <ul class="list-group">
-                    <li class="list-group-item">
-                        <h6>
-                            <i class="fas fa-folder"></i>&nbsp;
-                            BasicCore
-                        </h6>
-                    </li>
-                    <li class="list-group-item">
-                        <NavLink class="btn bg-gradient-primary mb-0 me-1"
-                            href="CMSCore/Failure">
-                                <i class="fas fa-file"></i>&nbsp;
-                                Failure
-                        </NavLink>
-                    </li>
+                @foreach (Menu menu in lstMenuResult)
+                    {
+                        if (menu.MenuFatherId == 0)
+                        {
+                            <li class="list-group-item">
+                                <h6>
+                                    <i class="fas fa-folder"></i>&nbsp;
+                                    @menu.Name
+                                </h6>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="list-group-item">
+                                <NavLink class="btn bg-gradient-primary mb-0 me-1"
+                                            href="@menu.URLPath">
+                                    <i class="fas fa-file"></i>&nbsp;
+                                        @menu.Name
+                                </NavLink>
+                            </li>
+                        }
+                    }
                 </ul>
             </div>
         </div>
@@ -151,9 +163,11 @@ id="sidenav-main">
 
 @code{
     #region Properties
-    public UserEntity? User { get; set; }
+    public EmptyProject.Areas.CMSCore.Entities.User? User { get; set; }
 
     public bool Toggle { get; set; } = false;
+
+    public List<Menu?> lstMenuResult { get; set; }
     #endregion
 
     protected override void OnInitialized()
@@ -165,6 +179,18 @@ id="sidenav-main">
         {
             //Logged user
             Toggle = true;
+
+            List<RoleMenu?> lstRoleMenu = rolemenuRepository
+                                    .GetAll(CancellationToken.None);
+
+            List<Menu?> lstMenu = menuRepository
+                                    .GetAll(CancellationToken.None);
+
+            lstMenuResult = rolemenuRepository
+                                .GetAllURLPathByRoleId(User.RoleId,
+                                lstRoleMenu,
+                                lstMenu);
+
         }
         else
         {

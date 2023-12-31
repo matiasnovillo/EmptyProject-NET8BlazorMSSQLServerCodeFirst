@@ -121,7 +121,7 @@
 @code {
     #region Properties
     [SupplyParameterFromForm]
-    public UserEntity? User { get; set; }
+    public Areas.CMSCore.Entities.User? User { get; set; }
 
     public string MessageForLoginForm { get; set; } = "";
 
@@ -226,8 +226,8 @@
 
     private void Salir(MouseEventArgs e)
     {
-        User = new UserEntity();
-        StateContainer.User = new UserEntity();
+            User = new Areas.CMSCore.Entities.User();
+            StateContainer.User = new Areas.CMSCore.Entities.User();
 
         //Show login form
         Toggle = false;

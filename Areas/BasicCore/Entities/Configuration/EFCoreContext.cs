@@ -8,10 +8,10 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
     {
         protected IConfiguration _configuration { get; }
 
-        public DbSet<UserEntity> DbSetUser { get; set; }
-        public DbSet<RoleEntity> DbSetRole { get; set; }
-        public DbSet<MenuEntity> DbSetMenu { get; set; }
-        public DbSet<RoleMenuEntity> DbSetRoleMenu { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Role> Role { get; set; }
+        public DbSet<Menu> Menu { get; set; }
+        public DbSet<RoleMenu> RoleMenu { get; set; }
 
         public EFCoreContext(IConfiguration configuration)
         {
@@ -40,21 +40,22 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                 modelBuilder.ApplyConfiguration(new MenuConfiguration());
                 modelBuilder.ApplyConfiguration(new RoleMenuConfiguration());
 
-                modelBuilder.Entity<UserEntity>().HasData(new UserEntity
+                modelBuilder.Entity<User>().HasData(new User
                 {
                     UserId = 1,
                     Email = "novillo.matias1@gmail.com",
-                    Password = "Pq5FM4q7dDtlZBGcn0w8P0XjnEPDlTCcLUY5/bWVcuVJ4/kXRyHp62hPgry0R/ur+kEspHc+HK6XqqvA8OLXLw=="
+                    Password = "Pq5FM4q7dDtlZBGcn0w8P0XjnEPDlTCcLUY5/bWVcuVJ4/kXRyHp62hPgry0R/ur+kEspHc+HK6XqqvA8OLXLw==",
+                    RoleId = 1,
                 });
 
-                modelBuilder.Entity<RoleEntity>().HasData(new RoleEntity
+                modelBuilder.Entity<Role>().HasData(new Role
                 {
                     RoleId = 1,
                     Name = "Administrator"
                 });
 
                 #region Menu
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 1,
                     Name = "BasicCore",
@@ -65,7 +66,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 2,
                     Name = "Failure",
@@ -76,7 +77,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 3,
                     Name = "Parameter",
@@ -87,7 +88,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 4,
                     Name = "BasicCulture",
@@ -98,7 +99,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 5,
                     Name = "City",
@@ -109,7 +110,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 6,
                     Name = "State",
@@ -120,7 +121,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 7,
                     Name = "Country",
@@ -131,7 +132,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 8,
                     Name = "Planet",
@@ -142,7 +143,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 9,
                     Name = "Sex",
@@ -153,7 +154,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 10,
                     Name = "CMSCore",
@@ -164,7 +165,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 11,
                     Name = "User",
@@ -175,7 +176,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 12,
                     Name = "Role",
@@ -186,7 +187,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 13,
                     Name = "Menu",
@@ -197,7 +198,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Active = true
                 });
 
-                modelBuilder.Entity<MenuEntity>().HasData(new MenuEntity
+                modelBuilder.Entity<Menu>().HasData(new Menu
                 {
                     MenuId = 14,
                     Name = "Permission",
@@ -210,15 +211,14 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                 #endregion
 
                 #region RoleMenu (Permission)
-                modelBuilder.Entity<RoleMenuEntity>().HasData(new RoleMenuEntity
+                modelBuilder.Entity<RoleMenu>().HasData(new RoleMenu
                 {
                     RoleMenuId = 1,
                     RoleId = 1,
                     MenuId = 10
                 });
 
-                #region RoleMenu (Permission)
-                modelBuilder.Entity<RoleMenuEntity>().HasData(new RoleMenuEntity
+                modelBuilder.Entity<RoleMenu>().HasData(new RoleMenu
                 {
                     RoleMenuId = 2,
                     RoleId = 1,

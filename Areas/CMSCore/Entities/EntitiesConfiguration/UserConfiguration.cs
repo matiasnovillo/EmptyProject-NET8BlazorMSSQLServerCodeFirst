@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
 {
-    public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
+    public class UserConfiguration : IEntityTypeConfiguration<User>
     {
-        public void Configure(EntityTypeBuilder<UserEntity> entity)
+        public void Configure(EntityTypeBuilder<User> entity)
         {
             try
             {
@@ -22,6 +22,11 @@ namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
                 //Password
                 entity.Property(e => e.Password)
                     .IsRequired(false);
+
+                //RoleId
+                entity.Property(e => e.RoleId)
+                    .HasColumnType("int")
+                    .IsRequired(true);
             }
             catch (Exception)
             {

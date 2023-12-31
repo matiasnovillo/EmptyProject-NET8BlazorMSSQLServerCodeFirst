@@ -4,7 +4,7 @@ namespace EmptyProject.Areas.CMSCore.DTOs
 {
     public class paginatedUserDTO
     {
-        public List<UserEntity?> lstUser { get; set; }
+        public List<User?> lstUser { get; set; }
         public int TotalItems { get; set; }
         public int PageIndex { get; set; }
         public int PageSize { get; set; }

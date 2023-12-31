@@ -80,7 +80,7 @@ else
     public string MessageForLoginForm { get; set; } = "";
 
     [SupplyParameterFromForm]
-    public UserEntity? User { get; set; }
+    public User? User { get; set; }
     #endregion
 
     protected override void OnInitialized()
@@ -135,8 +135,8 @@ else
                 return;
             }
 
-            //Avoid creating an existing email
-            List<UserEntity?> SelectedUsers = userRepository
+                //Avoid creating an existing email
+                List<User?> SelectedUsers = userRepository
                 .GetAllByEmail(User.Email, false, CancellationToken.None);
 
             if (SelectedUsers.Count() != 0)

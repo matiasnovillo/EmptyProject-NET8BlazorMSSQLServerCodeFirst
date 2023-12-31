@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
 {
-    public class RoleConfiguration : IEntityTypeConfiguration<RoleEntity>
+    public class RoleConfiguration : IEntityTypeConfiguration<Role>
     {
-        public void Configure(EntityTypeBuilder<RoleEntity> entity)
+        public void Configure(EntityTypeBuilder<Role> entity)
         {
             try
             {

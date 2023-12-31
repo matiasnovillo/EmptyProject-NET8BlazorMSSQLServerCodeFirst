@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
 {
-    public class MenuConfiguration : IEntityTypeConfiguration<MenuEntity>
+    public class MenuConfiguration : IEntityTypeConfiguration<Menu>
     {
-        public void Configure(EntityTypeBuilder<MenuEntity> entity)
+        public void Configure(EntityTypeBuilder<Menu> entity)
         {
             try
             {
@@ -20,13 +20,11 @@ namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
 
                 //MenuFatherId
                 entity.Property(e => e.MenuFatherId)
-                    .HasColumnType("int")
-                    .IsRequired(false);
+                    .HasColumnType("int");
 
                 //Order
                 entity.Property(e => e.Order)
-                    .HasColumnType("int")
-                    .IsRequired(false);
+                    .HasColumnType("int");
 
                 //URLPath
                 entity.Property(e => e.URLPath)
@@ -37,9 +35,8 @@ namespace EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration
                     .IsRequired(false);
 
                 //Active
-                entity.Property(e => e.IconURLPath)
-                    .HasColumnType("tinyint")
-                    .IsRequired(false);
+                entity.Property(e => e.Active)
+                    .HasColumnType("tinyint");
             }
             catch (Exception)
             {

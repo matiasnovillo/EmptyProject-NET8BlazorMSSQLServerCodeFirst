@@ -15,31 +15,31 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             _context = context;
         }
 
-        public IQueryable<RoleMenuEntity> AsQueryable()
+        public IQueryable<RoleMenu> AsQueryable()
         {
-            return _context.DbSetRoleMenu
+            return _context.RoleMenu
                         .AsQueryable();
         }
 
         #region Queries
         public async Task<int> Count(CancellationToken cancellationToken)
         {
-            return await _context.DbSetRoleMenu
+            return await _context.RoleMenu
                             .CountAsync();
         }
 
-        public RoleMenuEntity? GetById(int roleId, CancellationToken cancellationToken)
+        public RoleMenu? GetById(int roleId, CancellationToken cancellationToken)
         {
-            return _context.DbSetRoleMenu
+            return _context.RoleMenu
                         .FirstOrDefault(x => x.RoleMenuId == roleId);
         }
 
-        public List<RoleMenuEntity?> GetAll(CancellationToken cancellationToken)
+        public List<RoleMenu?> GetAll(CancellationToken cancellationToken)
         {
-            List<RoleMenuEntity?> lstRoleMenu = [];
+            List<RoleMenu?> lstRoleMenu = [];
 
             var GetAllQuery =
-                    from x in _context.DbSetRoleMenu
+                    from x in _context.RoleMenu
                     select new
                     {
                         x.RoleMenuId,
@@ -49,7 +49,7 @@ namespace EmptyProject.Areas.CMSCore.Repositories
 
             foreach (var x in GetAllQuery)
             {
-                RoleMenuEntity roleEntity = new()
+                RoleMenu roleEntity = new()
                 {
                     RoleMenuId = x.RoleMenuId,
                     RoleId = x.RoleId,
@@ -73,9 +73,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                 .Trim(), @"\s+", " ")
                 .Split(" ");
 
-            int TotalRoleMenu = await _context.DbSetRoleMenu.CountAsync();
+            int TotalRoleMenu = await _context.RoleMenu.CountAsync();
 
-            var paginatedRoleMenu = await _context.DbSetRoleMenu
+            var paginatedRoleMenu = await _context.RoleMenu
                     .Where(x => strictSearch ?
                         words.All(word => x.RoleMenuId.ToString().Contains(word)) :
                         words.Any(word => x.RoleMenuId.ToString().Contains(word)))
@@ -92,22 +92,49 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                 PageSize = pageSize
             };
         }
+
+        public List<Menu?> GetAllURLPathByRoleId(int roleId, List<RoleMenu> lstRoleMenu, List<Menu> lstMenu)
+        {
+            List<Menu?> lstMenuResult = [];
+
+            var GetAllURLPathByRoleId = (from rm in lstRoleMenu
+                        join m in lstMenu on rm.MenuId equals m.MenuId
+                        where rm.RoleId == roleId
+                        select m).ToList();
+
+            foreach (var x in GetAllURLPathByRoleId)
+            {
+                Menu menu = new()
+                {
+                    MenuId = x.MenuId,
+                    Active = x.Active,
+                    IconURLPath = x.IconURLPath,
+                    URLPath = x.URLPath,
+                    MenuFatherId = x.MenuFatherId,
+                    Name = x.Name,
+                    Order = x.Order
+                };
+                lstMenuResult.Add(menu);
+            }
+
+            return lstMenuResult;
+        }
         #endregion
 
         #region Non-Queries
-        public async Task<bool> Add(RoleMenuEntity roleEntity, 
+        public async Task<bool> Add(RoleMenu roleEntity, 
             CancellationToken cancellationToken)
         {
-            await _context.DbSetRoleMenu
+            await _context.RoleMenu
                 .AddAsync(roleEntity, cancellationToken);
 
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task<bool> Update(RoleMenuEntity roleEntity, 
+        public async Task<bool> Update(RoleMenu roleEntity, 
             CancellationToken cancellationToken)
         {
-            _context.DbSetRoleMenu
+            _context.RoleMenu
                 .Update(roleEntity);
 
             return await _context

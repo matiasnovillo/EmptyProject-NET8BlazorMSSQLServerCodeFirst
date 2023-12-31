@@ -15,42 +15,44 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             _context = context;
         }
 
-        public IQueryable<UserEntity> AsQueryable()
+        public IQueryable<User> AsQueryable()
         {
-            return _context.DbSetUser.AsQueryable();
+            return _context.User.AsQueryable();
         }
 
         #region Queries
         public async Task<int> Count(CancellationToken cancellationToken)
         {
-            return await _context.DbSetUser.CountAsync();
+            return await _context.User.CountAsync();
         }
 
-        public UserEntity? GetById(int userId, CancellationToken cancellationToken)
+        public User? GetById(int userId, CancellationToken cancellationToken)
         {
-            return _context.DbSetUser.FirstOrDefault(u => u.UserId == userId);
+            return _context.User.FirstOrDefault(u => u.UserId == userId);
         }
 
-        public List<UserEntity?> GetAll(CancellationToken cancellationToken)
+        public List<User?> GetAll(CancellationToken cancellationToken)
         {
-            List<UserEntity?> lstUser = [];
+            List<User?> lstUser = [];
 
             var GetAllQuery =
-                    from x in _context.DbSetUser
+                    from x in _context.User
                     select new
                     {
                         x.UserId,
                         x.Email,
                         x.Password,
+                        x.RoleId
                     };
 
             foreach (var x in GetAllQuery)
             {
-                UserEntity user = new()
+                User user = new()
                 {
                     UserId = x.UserId,
                     Email = x.Email,
-                    Password = x.Password
+                    Password = x.Password,
+                    RoleId = x.RoleId
                 };
                 lstUser.Add(user);
             }
@@ -58,17 +60,17 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             return lstUser;
         }
 
-        public UserEntity? GetByEmailAndPassword(string email, 
+        public User? GetByEmailAndPassword(string email, 
             string password, 
             CancellationToken cancellationToken)
         {
-            return _context.DbSetUser.AsQueryable()
+            return _context.User.AsQueryable()
                 .Where(u => u.Password == password)
                 .Where(u => u.Email == email)
                 .FirstOrDefault();
         }
 
-        public List<UserEntity?> GetAllByEmail(string textToSearch,
+        public List<User?> GetAllByEmail(string textToSearch,
     bool strictSearch,
     CancellationToken cancellationToken)
         {
@@ -78,7 +80,7 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                 .Trim(), @"\s+", " ")
                 .Split(" ");
 
-            List<UserEntity?> lstUser = [];
+            List<User?> lstUser = [];
 
             var GetAllQuery = AsQueryable()
                 .Where(x => strictSearch ?
@@ -88,7 +90,7 @@ namespace EmptyProject.Areas.CMSCore.Repositories
 
             foreach (var x in GetAllQuery)
             {
-                UserEntity user = new()
+                User user = new()
                 {
                     UserId = x.UserId,
                     Email = x.Email,
@@ -112,9 +114,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                 .Trim(), @"\s+", " ")
                 .Split(" ");
 
-            int TotalUser = await _context.DbSetUser.CountAsync();
+            int TotalUser = await _context.User.CountAsync();
 
-            var paginatedUser = await _context.DbSetUser
+            var paginatedUser = await _context.User
                     .Where(x => strictSearch ?
                         words.All(word => x.Email.Contains(word)) :
                         words.Any(word => x.Email.Contains(word)))
@@ -134,17 +136,17 @@ namespace EmptyProject.Areas.CMSCore.Repositories
         #endregion
 
         #region Non-Queries
-        public async Task<bool> Add(UserEntity user, 
+        public async Task<bool> Add(User user, 
             CancellationToken cancellationToken)
         {
-            await _context.DbSetUser.AddAsync(user, cancellationToken);
+            await _context.User.AddAsync(user, cancellationToken);
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task<bool> Update(UserEntity user, 
+        public async Task<bool> Update(User user, 
             CancellationToken cancellationToken)
         {
-            _context.DbSetUser.Update(user);
+            _context.User.Update(user);
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 

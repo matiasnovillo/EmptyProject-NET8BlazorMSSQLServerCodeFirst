@@ -15,31 +15,31 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             _context = context;
         }
 
-        public IQueryable<RoleEntity> AsQueryable()
+        public IQueryable<Role> AsQueryable()
         {
-            return _context.DbSetRole
+            return _context.Role
                         .AsQueryable();
         }
 
         #region Queries
         public async Task<int> Count(CancellationToken cancellationToken)
         {
-            return await _context.DbSetRole
+            return await _context.Role
                             .CountAsync();
         }
 
-        public RoleEntity? GetById(int roleId, CancellationToken cancellationToken)
+        public Role? GetById(int roleId, CancellationToken cancellationToken)
         {
-            return _context.DbSetRole
+            return _context.Role
                         .FirstOrDefault(x => x.RoleId == roleId);
         }
 
-        public List<RoleEntity?> GetAll(CancellationToken cancellationToken)
+        public List<Role?> GetAll(CancellationToken cancellationToken)
         {
-            List<RoleEntity?> lstRole = [];
+            List<Role?> lstRole = [];
 
             var GetAllQuery =
-                    from x in _context.DbSetRole
+                    from x in _context.Role
                     select new
                     {
                         x.RoleId,
@@ -48,7 +48,7 @@ namespace EmptyProject.Areas.CMSCore.Repositories
 
             foreach (var x in GetAllQuery)
             {
-                RoleEntity roleEntity = new()
+                Role roleEntity = new()
                 {
                     RoleId = x.RoleId,
                     Name = x.Name
@@ -71,9 +71,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                 .Trim(), @"\s+", " ")
                 .Split(" ");
 
-            int TotalRole = await _context.DbSetRole.CountAsync();
+            int TotalRole = await _context.Role.CountAsync();
 
-            var paginatedRole = await _context.DbSetRole
+            var paginatedRole = await _context.Role
                     .Where(x => strictSearch ?
                         words.All(word => x.RoleId.ToString().Contains(word)) :
                         words.Any(word => x.RoleId.ToString().Contains(word)))
@@ -93,19 +93,19 @@ namespace EmptyProject.Areas.CMSCore.Repositories
         #endregion
 
         #region Non-Queries
-        public async Task<bool> Add(RoleEntity roleEntity, 
+        public async Task<bool> Add(Role roleEntity, 
             CancellationToken cancellationToken)
         {
-            await _context.DbSetRole
+            await _context.Role
                 .AddAsync(roleEntity, cancellationToken);
 
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task<bool> Update(RoleEntity roleEntity, 
+        public async Task<bool> Update(Role roleEntity, 
             CancellationToken cancellationToken)
         {
-            _context.DbSetRole
+            _context.Role
                 .Update(roleEntity);
 
             return await _context

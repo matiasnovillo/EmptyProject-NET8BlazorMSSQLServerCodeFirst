@@ -15,31 +15,31 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             _context = context;
         }
 
-        public IQueryable<MenuEntity> AsQueryable()
+        public IQueryable<Menu> AsQueryable()
         {
-            return _context.DbSetMenu
+            return _context.Menu
                         .AsQueryable();
         }
 
         #region Queries
         public async Task<int> Count(CancellationToken cancellationToken)
         {
-            return await _context.DbSetMenu
+            return await _context.Menu
                             .CountAsync();
         }
 
-        public MenuEntity? GetById(int roleId, CancellationToken cancellationToken)
+        public Menu? GetById(int roleId, CancellationToken cancellationToken)
         {
-            return _context.DbSetMenu
+            return _context.Menu
                         .FirstOrDefault(x => x.MenuId == roleId);
         }
 
-        public List<MenuEntity?> GetAll(CancellationToken cancellationToken)
+        public List<Menu?> GetAll(CancellationToken cancellationToken)
         {
-            List<MenuEntity?> lstMenu = [];
+            List<Menu?> lstMenu = [];
 
             var GetAllQuery =
-                    from x in _context.DbSetMenu
+                    from x in _context.Menu
                     select new
                     {
                         x.MenuId,
@@ -52,10 +52,14 @@ namespace EmptyProject.Areas.CMSCore.Repositories
 
             foreach (var x in GetAllQuery)
             {
-                MenuEntity roleEntity = new()
+                Menu roleEntity = new()
                 {
                     MenuId = x.MenuId,
-                    Name = x.Name
+                    Name = x.Name,
+                    MenuFatherId = x.MenuFatherId,
+                    URLPath = x.URLPath,
+                    IconURLPath = x.IconURLPath,
+                    Active = x.Active
                 };
                 lstMenu.Add(roleEntity);
             }
@@ -75,9 +79,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                 .Trim(), @"\s+", " ")
                 .Split(" ");
 
-            int TotalMenu = await _context.DbSetMenu.CountAsync();
+            int TotalMenu = await _context.Menu.CountAsync();
 
-            var paginatedMenu = await _context.DbSetMenu
+            var paginatedMenu = await _context.Menu
                     .Where(x => strictSearch ?
                         words.All(word => x.MenuId.ToString().Contains(word)) :
                         words.Any(word => x.MenuId.ToString().Contains(word)))
@@ -97,19 +101,19 @@ namespace EmptyProject.Areas.CMSCore.Repositories
         #endregion
 
         #region Non-Queries
-        public async Task<bool> Add(MenuEntity roleEntity, 
+        public async Task<bool> Add(Menu roleEntity, 
             CancellationToken cancellationToken)
         {
-            await _context.DbSetMenu
+            await _context.Menu
                 .AddAsync(roleEntity, cancellationToken);
 
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task<bool> Update(MenuEntity roleEntity, 
+        public async Task<bool> Update(Menu roleEntity, 
             CancellationToken cancellationToken)
         {
-            _context.DbSetMenu
+            _context.Menu
                 .Update(roleEntity);
 
             return await _context
