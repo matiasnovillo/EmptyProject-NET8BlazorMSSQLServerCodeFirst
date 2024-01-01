@@ -93,31 +93,39 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             };
         }
 
-        public List<Menu?> GetAllURLPathByRoleId(int roleId, List<RoleMenu> lstRoleMenu, List<Menu> lstMenu)
+        public List<Menu> GetAllByRoleId(int roleId, List<Menu> lstMenu)
         {
-            List<Menu?> lstMenuResult = [];
+            List<RoleMenu> lstRoleMenu = GetAll(CancellationToken.None);
 
-            var GetAllURLPathByRoleId = (from rm in lstRoleMenu
-                        join m in lstMenu on rm.MenuId equals m.MenuId
-                        where rm.RoleId == roleId
-                        select m).ToList();
-
-            foreach (var x in GetAllURLPathByRoleId)
-            {
-                Menu menu = new()
-                {
-                    MenuId = x.MenuId,
-                    Active = x.Active,
-                    IconURLPath = x.IconURLPath,
-                    URLPath = x.URLPath,
-                    MenuFatherId = x.MenuFatherId,
-                    Name = x.Name,
-                    Order = x.Order
-                };
-                lstMenuResult.Add(menu);
-            }
+            var lstMenuResult = (from rm in lstRoleMenu
+                                      where rm.RoleId == roleId
+                                      join m in lstMenu on rm.MenuId equals m.MenuId
+                                      select m).ToList();
 
             return lstMenuResult;
+        }
+
+        public List<MenuWithStateDTO> GetAllWithStateByRoleId(int roleId, List<Menu> lstMenu)
+        {
+            List<RoleMenu> lstRoleMenu = GetAll(CancellationToken.None);
+
+            var lstMenuWithState = lstMenu
+                .Select(menu =>
+                    new MenuWithStateDTO
+                    {
+                        MenuId = menu.MenuId,
+                        Name = menu.Name,
+                        MenuFatherId = menu.MenuFatherId,
+                        Order = menu.Order,
+                        URLPath = menu.URLPath,
+                        IconURLPath = menu.IconURLPath,
+                        Active = menu.Active,
+                        IsSelected = lstRoleMenu
+                            .Any(rm => rm.RoleId == roleId && rm.MenuId == menu.MenuId)
+                    }
+                ).ToList();
+
+            return lstMenuWithState;
         }
         #endregion
 

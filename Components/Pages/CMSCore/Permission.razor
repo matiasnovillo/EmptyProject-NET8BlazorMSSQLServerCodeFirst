@@ -1,0 +1,171 @@
+﻿@page "/CMSCore/Permission"
+@using EmptyProject.Areas.CMSCore.Entities;
+@using EmptyProject.Areas.CMSCore.Repositories;
+@using EmptyProject.Components.Shared;
+@using EmptyProject.Areas.CMSCore.DTOs;
+@inject UserRepository userRepository;
+@inject RoleRepository roleRepository;
+@inject MenuRepository menuRepository;
+@inject RoleMenuRepository rolemenuRepository;
+@inject StateContainer StateContainer;
+@inject NavigationManager NavigationManager;
+
+<PageTitle>Permissions - EmptyProject</PageTitle>
+
+<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstAllMenu"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
+
+<div class="main-content position-relative max-height-vh-100 h-100">
+    <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
+    <div class="container-fluid px-2 px-md-4">
+        <div class="page-header min-height-300 border-radius-xl mt-4"
+             style="background-image: url('assets/img/illustrations/Landscape2.jpg');">
+            <span class="mask bg-gradient-primary opacity-6"></span>
+        </div>
+        <div class="card card-body mx-3 mx-md-4 mt-n6">
+            <div class="row">
+                <div class="col-12">
+                    <h4 class="mt-4 mb-2">
+                        Permissions
+                    </h4>
+                    <hr />
+                    <p>Choose a role</p>
+                    @foreach (Role role in lstAllRole)
+                    {
+                        <button class="btn bg-gradient-primary mx-2"
+                            @onclick="() => ChooseRole(role.Name)">
+                            @role.Name
+                        </button>
+                    }
+                    <hr />
+                    @if (CheckBoxesInHTML == "")
+                    {
+                        <div class="d-flex justify-content-center">
+                            <a href="https://www.shutterstock.com/es/image-photo/astronaut-elements-this-image-furnished-by-1022034061"
+                               target="_blank">
+                                <img src="img/BasicCore/Astronaut.jpg"
+                                     alt="login-first">
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        @((MarkupString)CheckBoxesInHTML)
+                    }
+                    <hr />
+                    <button class="btn bg-gradient-info"
+                            @onclick="() => Save()">
+                            <i class="fas fa-sd-card"></i>
+                            Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <EmptyProject.Components.Layout.FooterDashboard></EmptyProject.Components.Layout.FooterDashboard>
+</div>
+
+@code{
+    #region Properties
+    public EmptyProject.Areas.CMSCore.Entities.User? User { get; set; }
+
+    public bool Toggle { get; set; } = false;
+
+    public string CheckBoxesInHTML { get; set; }
+
+    public List<MenuWithStateDTO?> lstMenuWithState { get; set; }
+
+    public List<Menu?> lstAllMenu { get; set; }
+
+    public List<Role?> lstAllRole { get; set; }
+    #endregion
+
+    protected override void OnInitialized()
+    {
+        //Look for saved user in shared component, simulates a session
+        User = StateContainer.User == null ? new() : StateContainer.User;
+
+        if (User.UserId != 0)
+        {
+            //Logged user
+            Toggle = true;
+
+            List<Menu> lstMenu = menuRepository
+                                    .GetAll(CancellationToken.None);
+
+            lstAllMenu = rolemenuRepository
+                            .GetAllByRoleId(User.RoleId, lstMenu);
+
+            lstAllRole = roleRepository
+                .GetAll(CancellationToken.None);
+
+            CheckBoxesInHTML = "";
+        }
+        else
+        {
+            //Not logged user
+            Toggle = false;
+
+            //Redirect to...
+            NavigationManager.NavigateTo("Login");
+        }
+    }
+
+    private void ChooseRole(string ChosenRole)
+    {
+        try
+        {
+            lstAllMenu = menuRepository
+                            .GetAll(CancellationToken.None);
+
+            if (ChosenRole == "Administrator")
+            {
+                lstMenuWithState = rolemenuRepository
+                                    .GetAllWithStateByRoleId(1, lstAllMenu); //Role 1: Administrator
+
+                CheckBoxesInHTML = "";
+                foreach (MenuWithStateDTO menu in lstMenuWithState)
+                {
+                    CheckBoxesInHTML += $@"
+                <div class='form-check form-switch'>
+                    <input class='form-check-input'
+                           type='checkbox'
+                           id='{menu.Name}' " + (menu.IsSelected ? "checked" : null) + $@">
+                    <label class='form-check-label'
+                           for='{menu.Name}'>
+                            {menu.Name}
+                    </label>
+                </div>";
+                }
+            }
+            else
+            {
+                lstMenuWithState = rolemenuRepository
+                                    .GetAllWithStateByRoleId(2, lstAllMenu); //Role 2: Client
+
+                CheckBoxesInHTML = "";
+                foreach (MenuWithStateDTO menu in lstMenuWithState)
+                {
+                    CheckBoxesInHTML += $@"
+                <div class='form-check form-switch'>
+                    <input class='form-check-input'
+                           type='checkbox'
+                           id='{menu.Name}' " + (menu.IsSelected ? "checked" : null) + $@">
+                    <label class='form-check-label'
+                           for='{menu.Name}'>
+                            {menu.Name}
+                    </label>
+                </div>";
+                }
+            }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    private void Save()
+    {
+
+    }
+}
