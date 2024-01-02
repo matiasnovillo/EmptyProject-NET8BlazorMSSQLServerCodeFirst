@@ -53,14 +53,14 @@
                 {
                     if (menu.MenuFatherId == 0)
                     {
-                        <h6>
+                        @* <h6 class="mt-4">
                             <i class="fas fa-folder"></i>&nbsp;
                             @menu.Name
-                        </h6>
+                        </h6> *@
                     }
                     else
                     {
-                        <NavLink class="btn bg-gradient-primary mb-0 me-1"
+                        <NavLink class="btn bg-gradient-primary mx-1 my-1"
                                     href="@menu.URLPath">
                             <i class="fas fa-file"></i>&nbsp;
                                 @menu.Name

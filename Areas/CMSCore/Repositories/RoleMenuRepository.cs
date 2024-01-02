@@ -100,7 +100,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             var lstMenuResult = (from rm in lstRoleMenu
                                       where rm.RoleId == roleId
                                       join m in lstMenu on rm.MenuId equals m.MenuId
-                                      select m).ToList();
+                                      select m)
+                                      .OrderBy(x => x.Order)
+                                      .ToList();
 
             return lstMenuResult;
         }
@@ -130,30 +132,42 @@ namespace EmptyProject.Areas.CMSCore.Repositories
         #endregion
 
         #region Non-Queries
-        public async Task<bool> Add(RoleMenu roleEntity, 
+        public async Task<bool> Add(RoleMenu rolemenu, 
             CancellationToken cancellationToken)
         {
             await _context.RoleMenu
-                .AddAsync(roleEntity, cancellationToken);
+                .AddAsync(rolemenu, cancellationToken);
 
             return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task<bool> Update(RoleMenu roleEntity, 
+        public async Task<bool> Update(RoleMenu rolemenu, 
             CancellationToken cancellationToken)
         {
             _context.RoleMenu
-                .Update(roleEntity);
+                .Update(rolemenu);
 
             return await _context
                         .SaveChangesAsync(cancellationToken) > 0;
         }
 
-        public async Task<bool> DeleteByRoleMenuId(int roleId, 
+        public async Task<bool> DeleteByRoleMenuId(int rolemenuId, 
             CancellationToken cancellationToken)
         {
             AsQueryable()
-                .Where(x => x.RoleMenuId == roleId)
+                .Where(x => x.RoleMenuId == rolemenuId)
+                .ExecuteDelete();
+
+            return await _context.SaveChangesAsync(cancellationToken) > 0;
+        }
+
+        public async Task<bool> DeleteByMenuIdAndRoleId(int roleId,
+            int menuId,
+            CancellationToken cancellationToken)
+        {
+            AsQueryable()
+                .Where(x => x.MenuId == menuId)
+                .Where(x => x.RoleId == roleId)
                 .ExecuteDelete();
 
             return await _context.SaveChangesAsync(cancellationToken) > 0;

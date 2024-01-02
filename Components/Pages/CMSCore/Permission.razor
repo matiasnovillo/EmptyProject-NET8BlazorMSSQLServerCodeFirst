@@ -12,7 +12,7 @@
 
 <PageTitle>Permissions - EmptyProject</PageTitle>
 
-<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstAllMenu"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
+<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstAllMenuByRoleIdNavBarVerticalDashboard"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
 
 <div class="main-content position-relative max-height-vh-100 h-100">
     <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
@@ -37,7 +37,7 @@
                         </button>
                     }
                     <hr />
-                    @if (CheckBoxesInHTML == "")
+                    @if (lstMenuWithState.Count == 0)
                     {
                         <div class="d-flex justify-content-center">
                             <a href="https://www.shutterstock.com/es/image-photo/astronaut-elements-this-image-furnished-by-1022034061"
@@ -49,14 +49,38 @@
                     }
                     else
                     {
-                        @((MarkupString)CheckBoxesInHTML)
+                        @foreach (MenuWithStateDTO menu in lstMenuWithState)
+                        {
+                            if (menu.IsSelected)
+                            {
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input"
+                                            type="checkbox"
+                                            checked
+                                            @onchange="() => Submit(menu.MenuId, menu.IsSelected)"
+                                            id="@menu.Name">
+                                    <label class="form-check-label"
+                                            for="@menu.Name">
+                                        @menu.Name
+                                    </label>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input"
+                                            type="checkbox"
+                                            @onchange="() => Submit(menu.MenuId, menu.IsSelected)"
+                                            id="@menu.Name">
+                                    <label class="form-check-label"
+                                            for="@menu.Name">
+                                        @menu.Name
+                                    </label>
+                                </div>
+                            }
+                        }
                     }
                     <hr />
-                    <button class="btn bg-gradient-info"
-                            @onclick="() => Save()">
-                            <i class="fas fa-sd-card"></i>
-                            Save
-                    </button>
                 </div>
             </div>
         </div>
@@ -70,11 +94,13 @@
 
     public bool Toggle { get; set; } = false;
 
-    public string CheckBoxesInHTML { get; set; }
+    public int ChosenRole { get; set; }
 
     public List<MenuWithStateDTO?> lstMenuWithState { get; set; }
 
-    public List<Menu?> lstAllMenu { get; set; }
+    public List<Menu?> lstAllMenuByRoleId { get; set; }
+
+    public List<Menu?> lstAllMenuByRoleIdNavBarVerticalDashboard { get; set; }
 
     public List<Role?> lstAllRole { get; set; }
     #endregion
@@ -92,13 +118,16 @@
             List<Menu> lstMenu = menuRepository
                                     .GetAll(CancellationToken.None);
 
-            lstAllMenu = rolemenuRepository
-                            .GetAllByRoleId(User.RoleId, lstMenu);
+            lstAllMenuByRoleId = rolemenuRepository
+                                    .GetAllByRoleId(User.RoleId, lstMenu);
+
+            lstAllMenuByRoleIdNavBarVerticalDashboard = rolemenuRepository
+                                                            .GetAllByRoleId(User.RoleId, lstMenu);
 
             lstAllRole = roleRepository
-                .GetAll(CancellationToken.None);
+                            .GetAll(CancellationToken.None);
 
-            CheckBoxesInHTML = "";
+            lstMenuWithState = [];
         }
         else
         {
@@ -110,52 +139,25 @@
         }
     }
 
-    private void ChooseRole(string ChosenRole)
+    private void ChooseRole(string chosenRole)
     {
         try
         {
-            lstAllMenu = menuRepository
-                            .GetAll(CancellationToken.None);
+            List<Menu?> lstAllMenu = menuRepository
+                                    .GetAll(CancellationToken.None);
 
-            if (ChosenRole == "Administrator")
+            if (chosenRole == "Administrator")
             {
                 lstMenuWithState = rolemenuRepository
                                     .GetAllWithStateByRoleId(1, lstAllMenu); //Role 1: Administrator
-
-                CheckBoxesInHTML = "";
-                foreach (MenuWithStateDTO menu in lstMenuWithState)
-                {
-                    CheckBoxesInHTML += $@"
-                <div class='form-check form-switch'>
-                    <input class='form-check-input'
-                           type='checkbox'
-                           id='{menu.Name}' " + (menu.IsSelected ? "checked" : null) + $@">
-                    <label class='form-check-label'
-                           for='{menu.Name}'>
-                            {menu.Name}
-                    </label>
-                </div>";
-                }
+                ChosenRole = 1;
             }
             else
             {
                 lstMenuWithState = rolemenuRepository
                                     .GetAllWithStateByRoleId(2, lstAllMenu); //Role 2: Client
 
-                CheckBoxesInHTML = "";
-                foreach (MenuWithStateDTO menu in lstMenuWithState)
-                {
-                    CheckBoxesInHTML += $@"
-                <div class='form-check form-switch'>
-                    <input class='form-check-input'
-                           type='checkbox'
-                           id='{menu.Name}' " + (menu.IsSelected ? "checked" : null) + $@">
-                    <label class='form-check-label'
-                           for='{menu.Name}'>
-                            {menu.Name}
-                    </label>
-                </div>";
-                }
+                ChosenRole = 2;
             }
         }
         catch (Exception)
@@ -164,8 +166,25 @@
         }
     }
 
-    private void Save()
+    private async void Submit(int menuId, bool isSelected)
     {
+        //Delete by MenuId and RoleId
+        await rolemenuRepository
+                .DeleteByMenuIdAndRoleId(ChosenRole, menuId, CancellationToken.None);
 
+        if (!isSelected)
+        {
+            RoleMenu rolemenu = new()
+                {
+                    MenuId = menuId,
+                    RoleId = ChosenRole
+                };
+
+            await rolemenuRepository
+                    .Add(rolemenu, CancellationToken.None);
+        }
+
+        //Re-render the page
+        await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
     }
 }
