@@ -1,5 +1,6 @@
 using EmptyProject.Areas.BasicCore.Entities.Configuration;
 using EmptyProject.Areas.CMSCore.Repositories;
+using EmptyProject.Areas.Testing.Repositories;
 using EmptyProject.Components;
 using EmptyProject.Components.Shared;
 
@@ -16,6 +17,7 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<MenuRepository>();
 builder.Services.AddScoped<RoleMenuRepository>();
+builder.Services.AddScoped<TestRepository>();
 
 //Set access to StateContainer to share data between Blazor components
 builder.Services.AddSingleton<StateContainer>();

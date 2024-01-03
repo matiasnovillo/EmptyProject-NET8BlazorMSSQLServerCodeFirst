@@ -1,0 +1,174 @@
+﻿@page "/TestPage/{UserId:int}"
+@using EmptyProject.Areas.CMSCore.Entities;
+@using EmptyProject.Areas.CMSCore.Repositories;
+@using EmptyProject.Components.Shared
+@inject UserRepository userRepository;
+@inject StateContainer StateContainer
+@inject NavigationManager NavigationManager
+
+<PageTitle>Editar usuario - EmptyProject</PageTitle>
+
+@if (Toggle)
+{
+    <!--Page for logged user-->
+    <div class="container">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3><i class="fas fa-user"></i> Editar usuario</h3>
+                <NavLink class="btn btn-outline-info text-white mt-3" 
+                    href="users">
+                    <span class="fas fa-chevron-left" aria-hidden="true"></span>
+                    &nbsp;Volver
+                </NavLink>
+            </div>
+            <div class="card-body">
+                <form method="post" @onsubmit="Submit"
+                      @formname="login-form" class="mb-4">
+                    <AntiforgeryToken />
+                    <!--Email-->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <b>Email</b>
+                        </label>
+                        <InputText @bind-Value="User!.Email"
+                                   type="email" id="email"
+                                   class="form-control" />
+                    </div>
+                    <!--Password-->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <b>Contraseña</b>
+                        </label>
+                        <InputText @bind-Value="User!.Password"
+                                   type="password" id="password"
+                                   class="form-control" />
+                    </div>
+                    <button id="btn-submit" type="submit"
+                            class="btn btn-primary">
+                        <i class="fas fa-pen"></i>
+                        Editar
+                    </button>
+                    <NavLink class="btn btn-info text-white" href="users">
+                        <span class="fas fa-chevron-left" aria-hidden="true"></span>&nbsp;Volver
+                    </NavLink>
+                </form>
+                @if (MessageForLoginForm != "")
+                {
+                    <span class="text-danger">
+                        @((MarkupString)MessageForLoginForm)
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!--Page for not logged user-->
+    <EmptyProject.Components.Layout.NotLogged></EmptyProject.Components.Layout.NotLogged>
+}
+
+@code {
+    #region Properties
+    [Parameter]
+    public int UserId { get; set; }
+
+    public bool Toggle { get; set; }
+
+    public string DownloadButton { get; set; } = "";
+
+    public string MessageForLoginForm { get; set; } = "";
+
+    [SupplyParameterFromForm]
+    public User? User { get; set; }
+    #endregion
+
+    protected override void OnInitialized()
+    {
+        User = StateContainer.User;
+
+        if (User != null)
+        {
+            if (User.UserId != 0)
+            {
+                //Logged user
+                Toggle = true;
+
+                if (UserId == 0)
+                {
+                    //Create new user
+                    User.Email = "";
+                    User.Password = "";
+                }
+                else
+                {
+                    //Edit user
+                    //Populate user data
+                    User = userRepository
+                    .GetByUserId(UserId, CancellationToken.None);
+                }
+            }
+            else
+            {
+                //Not logged user
+                Toggle = false;
+            }
+        }
+        else
+        {
+            //Impossible
+            Toggle = false;
+        }
+
+        base.OnInitialized();
+    }
+
+    private async void Submit()
+    {
+        try
+        {
+            //Validations
+            if (User!.Email == "" || User!.Password == "")
+            {
+                MessageForLoginForm = $@"<i class=""fas fa-exclamation""></i>
+                                        Ningún campo puede estar vacío";
+                return;
+            }
+
+                //Avoid creating an existing email
+                List<User?> SelectedUsers = userRepository
+                .GetAllByEmail(User.Email, false, CancellationToken.None);
+
+            if (SelectedUsers.Count() != 0)
+            {
+                //The user exists
+                MessageForLoginForm = $@"<i class=""fas fa-exclamation""></i>
+                                        Ya existe un usuario con ese email";
+
+                return;
+            }
+
+            if (UserId == 0)
+            {
+                //Create new user
+                User.UserId = 0;
+                await userRepository.Add(User, CancellationToken.None);
+            }
+            else
+            {
+                //Update data
+                await userRepository
+                .Update(User, CancellationToken.None);
+            }
+
+            //Redirect to users page
+            NavigationManager.NavigateTo("users");
+        }
+        catch (Exception ex)
+        {
+            MessageForLoginForm = $@"<i class=""fas fa-exclamation""></i>
+                                    Hubo un error. Intenta nuevamente.
+                                    Mensaje de error: {ex.Message}";
+        }
+    }
+}

@@ -105,7 +105,7 @@ else
                     //Edit user
                     //Populate user data
                     User = userRepository
-                    .GetById(UserId, CancellationToken.None);
+                    .GetByUserId(UserId, CancellationToken.None);
                 }
             }
             else

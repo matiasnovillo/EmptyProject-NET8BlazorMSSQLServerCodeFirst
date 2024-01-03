@@ -3,10 +3,11 @@ using System.Text.RegularExpressions;
 using EmptyProject.Areas.CMSCore.Entities;
 using EmptyProject.Areas.BasicCore.Entities.Configuration;
 using EmptyProject.Areas.CMSCore.DTOs;
+using EmptyProject.Areas.CMSCore.Interfaces;
 
 namespace EmptyProject.Areas.CMSCore.Repositories
 {
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
         protected readonly EFCoreContext _context;
 
@@ -26,9 +27,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             return await _context.User.CountAsync();
         }
 
-        public User? GetById(int userId, CancellationToken cancellationToken)
+        public User? GetByUserId(int userId, CancellationToken cancellationToken)
         {
-            return _context.User.FirstOrDefault(u => u.UserId == userId);
+            return _context.User.FirstOrDefault(x => x.UserId == userId);
         }
 
         public List<User?> GetAll(CancellationToken cancellationToken)
