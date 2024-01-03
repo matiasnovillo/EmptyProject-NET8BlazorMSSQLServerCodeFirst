@@ -1,120 +1,398 @@
 ﻿@page "/TestPage"
-@using EmptyProject.Areas.CMSCore.Repositories;
+
 @using EmptyProject.Areas.CMSCore.Entities;
-@using EmptyProject.Components.Shared;
 @using EmptyProject.Areas.CMSCore.DTOs;
+@using EmptyProject.Areas.Testing.Repositories;
+@using EmptyProject.Areas.Testing.Entities;
+@using EmptyProject.Areas.Testing.DTOs;
+@using EmptyProject.Components.Shared;
 @inject UserRepository userRepository;
-@inject StateContainer StateContainer;
+@inject MenuRepository menuRepository;
+@inject RoleMenuRepository rolemenuRepository;
+@inject TestRepository testRepository;
 
-<PageTitle>UserQuery - EmptyProject</PageTitle>
+<PageTitle>Test - EmptyProject</PageTitle>
 
-@if(Toggle)
-{
-    <!--Page for logged user-->
-    <div class="container">
-        <div class="card mb-3">
-            <div class="card-header">
-                <h1>
-                    <i class="fas fa-user"></i>
-                    Control de usuarios
+<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstMenuResult"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
+
+@code{
+    public List<Menu?> lstMenuResult { get; set; }
+
+    protected override void OnInitialized()
+    {
+        //Look for saved user in shared component, simulates a session
+        User = StateContainer.User == null ? new() : StateContainer.User;
+
+        lstMenuResult = [];
+
+        if (User.UserId != 0)
+        {
+            //Logged user
+
+            List<Menu?> lstMenu = menuRepository
+                                    .GetAll(CancellationToken.None);
+
+            lstMenuResult = rolemenuRepository
+                                .GetAllByRoleId(User.RoleId, lstMenu);
+
+        }
+    }
+}
+<div class="main-content position-relative max-height-vh-100 h-100">
+    <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
+    <div class="container-fluid px-2 px-md-4">
+        <div class="page-header min-height-300 border-radius-xl mt-4"
+             style="background-image: url('assets/img/illustrations/Landscape2.jpg');">
+            <span class="mask bg-gradient-primary opacity-6"></span>
+        </div>
+        <div class="card card-body mx-3 mx-md-4 mt-n6">
+            <div class="card-header mb-0 pb-0 bg-white">
+                <h1 class="mb-3">
+                    Query test
                 </h1>
-                <NavLink class="btn btn-success text-white mt-3" href="users/0">
+                <NavLink class="btn btn-outline-info" href="Dashboard">
+                    <span class="fas fa-chevron-left" aria-hidden="true"></span>
+                    &nbsp;Go back
+                </NavLink>
+                <NavLink class="btn btn-success text-white" href="TestPage/0">
                     <span class="fas fa-plus" aria-hidden="true"></span>
-                    &nbsp;Crear usuario
+                    &nbsp;Create test
                 </NavLink>
             </div>
-            <div class="card-body">
+            <div class="card-body px-0">
                 <p class="mb-3 text-danger">@ErrorMessage</p>
                 <p class="mb-3 text-success">@SuccessMessage</p>
-                <div class="card mb-3">
-                    <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <!--Searchbox-->
+                        <input type="search" @oninput="SearchText"
+                               class="form-control"
+                               placeholder="Search test by TestId..." />
+                        <br />
+                        <!--Strict or lax search-->
+                        <div>
+                            <h6><b>Strict or lax search</b></h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="strict-search"
+                                       @bind="checkStrict"
+                                       id="strict-search" />
+                                <label class="form-check-label"
+                                       for="strict-search">
+                                    Strict search
+                                </label>
+                            </div>
+                        </div>
+                        <br />
+                        <h6><b>View type</b></h6>
+                        <div class="btn-group mb-3" role="group" aria-label="btngroup">
+                            <button type="button" 
+                                class="btn bg-gradient-primary"
+                                onclick=@(() => ChangeView("table"))>
+                                <i class="fas fa-table"></i>
+                                Table
+                            </button>
+                            <button type="button" 
+                                class="btn bg-gradient-primary"
+                                onclick=@(() => ChangeView("list"))>
+                                <i class="fas fa-th-list"></i>
+                                Cards
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8">
                         <div class="row">
-                            <div class="col-12 col-md-4">
-                                <!--Searchbox-->
-                                <input type="search" @oninput="SearchText"
-                                       class="form-control"
-                                       placeholder="Buscar usuario..." />
-                                <br />
-                                <!--Búsqueda estricta-->
-                                <div class="mb-3">
-                                    <h6><b>Búsqueda estricta o laxa</b></h6>
-                                    <input type="checkbox" class="mx-4"
-                                           id="strict-search"
-                                           name="strict-search"
-                                           @bind="checkStrict" />
-                                    <label for="strict-search">
-                                        Búsqueda estricta
-                                    </label>
-                                </div>
+                            <div class="d-flex justify-content-end">
+                                <!--Export buttons-->
+                                <button type="button"
+                                        @onclick="ConvertToExcel"
+                                        class="btn btn-outline-info ml-4 mb-4">
+                                    <i class="fas fa-file"></i>
+                                    Exportar a Excel
+                                </button>
+                                <button type="button"
+                                        @onclick="ConvertToCSV"
+                                        class="btn btn-outline-warning mb-4 mx-3">
+                                    <i class="fas fa-file"></i>
+                                    Exportar a CSV
+                                </button>
+                                <button type="button"
+                                        @onclick="ConvertToPDF"
+                                        class="btn btn-outline-success mb-4">
+                                    <i class="fas fa-file"></i>
+                                    Exportar a PDF
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="d-flex justify-content-end">
+                                <!--Download buttons-->
+                                @if (ShowDownloadButtonForExcel)
+                                {
+                                    <a class="btn btn-info mb-4"
+                                       href="@DownloadPathForExcel"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
+                                @if (ShowDownloadButtonForCSV)
+                                {
+                                    <a class="btn btn-warning mb-4 mx-3"
+                                       href="@DownloadPathForCSV"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
+                                @if (ShowDownloadButtonForPDF)
+                                {
+                                    <a class="btn btn-success mb-4"
+                                       href="@DownloadPathForPDF"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
                 <!--Table-->
-                <h6><b>Cantidad de usuarios: @TotalRows</b></h6>
-                <table class="table table-striped table-hover table-bordered table-responsive mt-4">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuario</th>
-                            <th>Contraseña</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (paginatedUserDTO != null)
-                        {
-                            @foreach (User? user in paginatedUserDTO.lstUser)
+                <h6><b>Number of registers: @TotalRows</b></h6>
+                @if (ChosenView == "table")
+                {
+                    <table class="table table-striped table-hover table-bordered table-responsive mt-4">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Boolean</th>
+                                <th>DateTime</th>
+                                <th>Decimal</th>
+                                <th>ForeignKeyDropdown</th>
+                                <th>ForeignKeyOptions</th>
+                                <th>Integer</th>
+                                <th>Basic</th>
+                                <th>Email</th>
+                                <th>File</th>
+                                <th>HexColour</th>
+                                <th>Password</th>
+                                <th>PhoneNumber</th>
+                                <th>Tag</th>
+                                <th>TextArea</th>
+                                <th>TextEditor</th>
+                                <th>URL</th>
+                                <th>Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (paginatedTestDTO != null)
                             {
-                                <tr>
-                                    <td>@user?.UserId</td>
-                                    <td>@user?.Email</td>
-                                    <td>@user?.Password</td>
-                                    <td>
-                                        <div class="nav-item">
-                                            <button class="btn btn-sm btn-outline-danger"
-                                                    onclick=@(() => Delete(user!.UserId))>
+                                @foreach (Test? test in paginatedTestDTO.lstTest)
+                                {
+                                    <tr>
+                                        <td>@test?.TestId</td>
+                                        @if (@test!.Boolean)
+                                        {
+                                            <td>
+                                                <span class="badge rounded-pill bg-success">ON</span>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>
+                                                <span class="badge rounded-pill bg-danger">OFF</span>
+                                            </td>
+                                        }
+                                        <td>@test?.DateTime</td>
+                                        <td>@test?.Decimal</td>
+                                        <td>@test?.ForeignKeyDropdown</td>
+                                        <td>@test?.ForeignKeyOptions</td>
+                                        <td>@test?.Integer</td>
+                                        <td>@test?.Basic</td>
+                                        <td>
+                                            <a class="nav-link text-info"
+                                               href="mailto:@test?.Email">
+                                                <b class="fas fa-envelope"></b>
+                                                @test?.Email
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a class="nav-link text-info"
+                                               href="@test?.File"
+                                               download>
+                                                <b class="fas fa-download"></b>
+                                                @test?.File
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span style="color:#@test?.HexColour;">
+                                                <b class="fas fa-palette"></b>
+                                                @test?.HexColour
+                                            </span>
+                                        </td>
+                                        <td>@test?.Password</td>
+                                        <td>
+                                            <a class="nav-link text-info"
+                                               href="tel:@test?.PhoneNumber">
+                                                <b class="fas fa-phone"></b>
+                                                @test?.PhoneNumber
+                                            </a>
+                                        </td>
+                                        <td>
+                                            @test?.Tag
+                                        </td>
+                                        <td>@test?.TextArea</td>
+                                        <td>@test?.TextEditor</td>
+                                        <td>
+                                            <a class="nav-link text-info"
+                                               href="@test?.URL"
+                                               target="_blank">
+                                                <b class="fas fa-link"></b>
+                                                @test?.URL
+                                            </a>
+                                        </td>
+                                        <td>@test?.Time</td>
+                                        <td>
+                                            <div class="nav-item">
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        onclick=@(() => Delete(test!.TestId))>
+                                                    <span class="fas fa-trash" aria-hidden="true"></span>
+                                                </button>
+                                            </div>
+                                            <div class="nav-item mt-2">
+                                                <a class="btn btn-sm btn-outline-info"
+                                                   href="TestPage/@test?.TestId">
+                                                    <span class="fas fa-pen" aria-hidden="true"></span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    @if (paginatedTestDTO != null)      
+                    {
+                        @foreach (Test? test in paginatedTestDTO.lstTest)
+                        {
+                            <div class="card shadow-lg mt-2">
+                                <div class="card-body">
+                                        <p><b>TestId: </b>@test?.TestId</p>
+                                        @if (@test!.Boolean)
+                                        {
+                                            <p>
+                                                <b>Boolean: </b>
+                                                <span class="badge rounded-pill bg-success">
+                                                    ON
+                                                </span>
+                                            </p>
+                                        }
+                                        else
+                                        {
+                                            <p>
+                                                <b>Boolean: </b>
+                                                <span class="badge rounded-pill bg-danger">
+                                                    OFF
+                                                </span>
+                                            </p>
+                                        }
+                                        <p><b>DateTime: </b>@test?.DateTime</p>
+                                        <p><b>Decimal: </b>@test?.Decimal</p>
+                                        <p><b>ForeignKeyDropdown: </b>@test?.ForeignKeyDropdown</p>
+                                        <p><b>ForeignKeyOptions: </b>@test?.ForeignKeyOptions</p>
+                                        <p><b>Integer: </b>@test?.Integer</p>
+                                        <p><b>Basic: </b>@test?.Basic</p>
+                                    <a class="nav-link text-info px-0"
+                                            href="mailto:@test?.Email">
+                                            <b>Email: </b>
+                                            <b class="fas fa-envelope"></b>
+                                            @test?.Email
+                                        </a>
+                                    <a class="nav-link text-info px-0"
+                                            href="@test?.File"
+                                            download>
+                                            <b>File: </b>
+                                            <b class="fas fa-download"></b>
+                                            @test?.File
+                                        </a>
+                                        <p style="color:#@test?.HexColour;">
+                                            <b>HexColour: </b>
+                                            <b class="fas fa-palette"></b>
+                                            @test?.HexColour
+                                        </p>
+                                        <p><b>Password: </b>@test?.Password</p>
+                                    <a class="nav-link text-info px-0"
+                                            href="tel:@test?.PhoneNumber">
+                                            <b>PhoneNumber: </b>
+                                            <b class="fas fa-phone"></b>
+                                            @test?.PhoneNumber
+                                        </a>
+                                        <p><b>Tag: </b>@test?.Tag</p>
+                                        <div><b>TextArea: </b>@test?.TextArea</div>
+                                        <div><b>TextEditor: </b>@test?.TextEditor</div>
+                                    <a class="nav-link text-info px-0"
+                                            href="@test?.URL"
+                                            target="_blank">
+                                            <b>URL: </b>
+                                            <b class="fas fa-link"></b>
+                                            @test?.URL
+                                        </a>
+                                        <p><b>Time: </b>@test?.Time</p>
+                                    </div>
+                                <div class="card-footer text-body-secondary">
+                                    <div class="row">
+                                        <div class="col-10">
+                                            &nbsp;
+                                        </div>
+                                        <div class="col-2">
+                                            <button class="btn btn-lg btn-outline-danger"
+                                                    onclick=@(() => Delete(test!.TestId))>
                                                 <span class="fas fa-trash" aria-hidden="true"></span>
                                             </button>
-                                        </div>
-                                        <div class="nav-item mt-2">
-                                            <a class="btn btn-sm btn-outline-info"
-                                               href="users/@user?.UserId">
+                                            <a class="btn btn-lg btn-outline-info"
+                                               href="TestPage/@test?.TestId">
                                                 <span class="fas fa-pen" aria-hidden="true"></span>
                                             </a>
                                         </div>
-                                    </td>
-                                </tr>
-                            }
+                                    </div>
+                                </div>
+                            </div>
                         }
-                    </tbody>
-                </table>
+                    }
+                }
+
                 <nav aria-label="Page navigation example">
                     <ul class="pagination justify-content-center">
-                        <li class="page-item 
-                            @(paginatedUserDTO.HasPreviousPage ? "" : "disabled")">
-                            <button class="page-link" 
-                            disabled="@(!paginatedUserDTO.HasPreviousPage)" 
-                            @onclick="() => OnPreviousPage()">
+                        <li class="page-item
+                        @(paginatedTestDTO!.HasPreviousPage ? "" : "disabled")">
+                            <button class="page-link"
+                                    disabled="@(!paginatedTestDTO.HasPreviousPage)"
+                                    @onclick="() => OnPreviousPage()">
                                 <i class="fas fa-chevron-left"></i>
                             </button>
                         </li>
-                        @for (int i = 1; i <= paginatedUserDTO.TotalPages; i++)
+                        @for (int i = 1; i <= paginatedTestDTO.TotalPages; i++)
                         {
                             int currentPage = i;
-                            <li class="page-item 
-                                @(i == paginatedUserDTO.PageIndex ? "active" : "")">
-                                <button class="page-link" 
+                            <li class="page-item
+                            @(i == paginatedTestDTO.PageIndex ? "active" : "")">
+                                <button class="page-link"
                                         onclick=@(() => OnPageSelected(currentPage))>
                                     @i
                                 </button>
                             </li>
                         }
-                        <li class="page-item 
-                            @(paginatedUserDTO.HasNextPage ? "" : "disabled")">
-                            <button class="page-link" 
-                            disabled="@(!paginatedUserDTO.HasNextPage)" 
-                            @onclick="() => OnNextPage()">
+                        <li class="page-item
+                        @(paginatedTestDTO.HasNextPage ? "" : "disabled")">
+                            <button class="page-link"
+                                    disabled="@(!paginatedTestDTO.HasNextPage)"
+                                    @onclick="() => OnNextPage()">
                                 <i class="fas fa-chevron-right"></i>
                             </button>
                         </li>
@@ -123,20 +401,16 @@
             </div>
         </div>
     </div>
-}
-else
-{
-    <!--Page for not logged user-->
-    <EmptyProject.Components.Layout.NotLogged></EmptyProject.Components.Layout.NotLogged>
-}
+    <EmptyProject.Components.Layout.FooterDashboard></EmptyProject.Components.Layout.FooterDashboard>
+</div>
 
 @code {
     #region Properties
     public int TotalRows { get; set; } = 0;
 
-    public bool checkStrict { get; set; }
+    public string? ChosenView { get; set; }
 
-    public bool Toggle { get; set; }
+    public bool checkStrict { get; set; }
 
     public string TextToSearch { get; set; } = "";
 
@@ -144,9 +418,19 @@ else
 
     public string SuccessMessage { get; set; } = "";
 
-    private User? User;
+    public bool ShowDownloadButtonForExcel { get; set; }
+    public bool ShowDownloadButtonForPDF { get; set; }
+    public bool ShowDownloadButtonForCSV { get; set; }
 
-    paginatedUserDTO paginatedUserDTO;
+    public string? DownloadPathForExcel { get; set; }
+    public string? DownloadPathForPDF { get; set; }
+    public string? DownloadPathForCSV { get; set; }
+
+    public User? User;
+
+    public Test? Test;
+
+    paginatedTestDTO? paginatedTestDTO;
     #endregion
 
     protected override async Task<bool> OnInitializedAsync()
@@ -155,35 +439,37 @@ else
 
         if (User != null)
         {
+            paginatedTestDTO = new();
+            paginatedTestDTO.lstTest = [];
+
             if (User.UserId != 0)
             {
                 //Logged user
-                Toggle = true;
 
-                paginatedUserDTO = new();
-                paginatedUserDTO.lstUser = [];
+                paginatedTestDTO = await testRepository
+                                            .GetAllByTestIdPaginated(
+                                                "",
+                                                checkStrict,
+                                                1,
+                                                15,
+                                                CancellationToken.None);
 
-                paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                "",
-                checkStrict,
-                1,
-                15,
-                CancellationToken.None);
+                TotalRows = await testRepository
+                                    .Count(CancellationToken.None);
 
-                TotalRows = await userRepository
-                    .Count(CancellationToken.None);
+                ChosenView = "list";
             }
             else
             {
                 //Not logged user
-                Toggle = false;
+
+                //Redirect to...
+                NavigationManager.NavigateTo("Login");
             }
         }
         else
         {
             //Impossible
-            Toggle = false;
         }
 
         base.OnInitialized();
@@ -199,37 +485,45 @@ else
             //Basic configuration
             SuccessMessage = "";
 
-            paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                args.Value.ToString(),
-                checkStrict,
-                1,
-                15,
-                CancellationToken.None);
+            TextToSearch = args.Value.ToString();
 
-            TotalRows = await userRepository
+            paginatedTestDTO = await testRepository
+                                        .GetAllByTestIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            1,
+                                            15,
+                                            CancellationToken.None);
+
+            TotalRows = await testRepository
                     .Count(CancellationToken.None);
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $@"Hubo un error. Intenta nuevamente.
-                            Mensaje de error: {ex.Message}";
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
         }
 
     }
 
     async Task OnPreviousPage()
     {
-        if (paginatedUserDTO.HasPreviousPage)
+        if (paginatedTestDTO.HasPreviousPage)
         {
-            paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                TextToSearch,
-                checkStrict,
-                (paginatedUserDTO.PageIndex - 1),
-                paginatedUserDTO.PageSize,
-                CancellationToken.None);
+            paginatedTestDTO = await testRepository
+                                        .GetAllByTestIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            (paginatedTestDTO.PageIndex - 1),
+                                            paginatedTestDTO.PageSize,
+                                            CancellationToken.None);
         }
+
+        TotalRows = await testRepository
+                            .Count(CancellationToken.None);
 
         //Re-render the page
         await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
@@ -237,13 +531,16 @@ else
 
     async Task OnPageSelected(int pageIndex)
     {
-        paginatedUserDTO = paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                TextToSearch,
-                checkStrict,
-                pageIndex,
-                paginatedUserDTO.PageSize,
-                CancellationToken.None);
+        paginatedTestDTO = paginatedTestDTO = await testRepository
+                                                        .GetAllByTestIdPaginated(
+                                                            TextToSearch,
+                                                            checkStrict,
+                                                            pageIndex,
+                                                            paginatedTestDTO.PageSize,
+                                                            CancellationToken.None);
+
+        TotalRows = await testRepository
+                            .Count(CancellationToken.None);
 
         //Re-render the page
         await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
@@ -251,49 +548,238 @@ else
 
     async Task OnNextPage()
     {
-        if (paginatedUserDTO.HasNextPage)
+        if (paginatedTestDTO.HasNextPage)
         {
-            paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                TextToSearch,
-                checkStrict,
-                (paginatedUserDTO.PageIndex + 1),
-                paginatedUserDTO.PageSize,
-                CancellationToken.None);
+            paginatedTestDTO = await testRepository
+                                        .GetAllByTestIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            (paginatedTestDTO.PageIndex + 1),
+                                            paginatedTestDTO.PageSize,
+                                            CancellationToken.None);
         }
+
+        TotalRows = await testRepository
+                            .Count(CancellationToken.None);
 
         //Re-render the page
         await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
     }
 
-    private async void Delete(int UserId)
+    private async void ChangeView(string chosenView)
+    {
+        ChosenView = chosenView;
+
+        //Re-render the page
+        await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+    }
+
+    private async void Delete(int testId)
     {
         try
         {
-            await userRepository.DeleteByUserId(UserId, CancellationToken.None);
+            await testRepository.DeleteByTestId(testId, CancellationToken.None);
 
-            paginatedUserDTO = await userRepository.
-            GetAllByEmailPaginated("", 
-            checkStrict,
-            1,
-            15, 
-            CancellationToken.None);
+            paginatedTestDTO = await testRepository
+                                        .GetAllByTestIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            1,
+                                            15, 
+                                            CancellationToken.None);
 
-            TotalRows = await userRepository
-                    .Count(CancellationToken.None);
+            TotalRows = await testRepository
+                                .Count(CancellationToken.None);
 
             TextToSearch = "";
 
+            SuccessMessage = "Register deleted correctly";
+
             //Re-render the page
             await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
-
-            SuccessMessage = "Usuario eliminado correctamente";
         }
         catch (Exception ex)
         {
-            ErrorMessage = $@"Hubo un error. Intenta nuevamente.
-                            Mensaje de error: {ex.Message}";
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
         }
+    }
+    #endregion
+
+    #region Conversions
+    private async void ConvertToExcel()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+
+            using var Book = new XLWorkbook();
+
+            List<Test?> lstTest = new();
+            DataTable dtTest = new DataTable();
+            dtTest.TableName = "Test";
+
+            //We define another DataTable to avoid issue related to DateTime conversion
+            DataTable dtTestCopy = new DataTable();
+            dtTestCopy.TableName = "TestCopy";
+
+            #region Define columns for dtTestCopy
+            DataColumn dtColumn1 = new DataColumn();
+            dtColumn1.DataType = typeof(string);
+            dtColumn1.ColumnName = "TestId";
+            dtTestCopy.Columns.Add(dtColumn1);
+            #endregion
+
+            lstTest = testRepository
+                        .GetAll(CancellationToken.None);
+
+            foreach (Test? Test in lstTest)
+            {
+                dtTestCopy.Rows.Add(Test.TestId);
+            }
+
+            var Sheet = Book.Worksheets.Add(dtTestCopy);
+
+            Sheet.ColumnsUsed().AdjustToContents();
+
+            DownloadPathForExcel = $@"wwwroot/Downloads/ExcelFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.xlsx";
+            Book.SaveAs(DownloadPathForExcel);
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForExcel = DownloadPathForExcel.Replace("wwwroot", "");
+
+            ShowDownloadButtonForExcel = true;
+
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void ConvertToCSV()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+
+            List<Test?> lstTest = testRepository
+                                    .GetAll(CancellationToken.None);
+
+            DownloadPathForCSV = $@"wwwroot/Downloads/CSVFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.csv";
+
+            using (var Writer = new StreamWriter(DownloadPathForCSV))
+            using (var CsvWriter = new CsvWriter(Writer,
+                CultureInfo.InvariantCulture))
+            {
+                CsvWriter.WriteRecords(lstTest);
+            }
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForCSV = DownloadPathForCSV.Replace("wwwroot", "");
+
+            ShowDownloadButtonForCSV = true;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void ConvertToPDF()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+            string ProjectName = "EmptyProject";
+            string Table = "Test";
+            var Renderer = new HtmlToPdf();
+            string RowsAsHTML = "";
+
+            List<Test?> lstTest = testRepository
+                                    .GetAll(CancellationToken.None);
+
+            DownloadPathForPDF = $@"wwwroot/Downloads/PDFFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.pdf";
+
+            foreach (Test? Test in lstTest)
+            {
+                RowsAsHTML += $@"{Test?.ToStringOnlyValuesForHTML()}";
+            }
+
+            Renderer.RenderHtmlAsPdf($@"
+<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""88%"" style=""width: 88% !important; min-width: 88%; max-width: 88%;"">
+    <tr>
+        <td align=""left"" valign=""top"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#1a1a1a"" style=""font-size: 52px; line-height: 55px; font-weight: 300; letter-spacing: -1.5px;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #1a1a1a; font-size: 52px; line-height: 55px; font-weight: 300; letter-spacing: -1.5px;"">{ProjectName}</span>
+            </font>
+            <div style=""height: 25px; line-height: 25px; font-size: 23px;"">&nbsp;</div>
+            <font face=""'Source Sans Pro', sans-serif"" color=""#4c4c4c"" style=""font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #4c4c4c; font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;"">{Table}</span>
+            </font>
+            <div style=""height: 35px; line-height: 35px; font-size: 33px;"">&nbsp;</div>
+        </td>
+    </tr>
+</table>
+<br>
+<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""100%"" style=""width: 100% !important; min-width: 100%; max-width: 100%;"">
+    <tr>
+        <th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">ID</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th>
+        <th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Tipo de interacción</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th>
+        <th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Descripción</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th>
+        <th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Fecha y hora</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th>
+        <th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">ID del usuario</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th>
+    </tr>
+    {RowsAsHTML}
+</table>
+<br>
+<font face=""'Source Sans Pro', sans-serif"" color=""#868686"" style=""font-size: 17px; line-height: 20px;"">
+    <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #868686; font-size: 17px; line-height: 20px;"">Printed on: {DateTime.Now}</span>
+</font>
+").SaveAs(DownloadPathForPDF);
+
+            ShowDownloadButtonForPDF = true;
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForPDF = DownloadPathForPDF.Replace("wwwroot", "");
+
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+
     }
     #endregion
 }

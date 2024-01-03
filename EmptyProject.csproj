@@ -27,6 +27,9 @@
   <ItemGroup>
     <Folder Include="Backup\" />
     <Folder Include="CommonFunctions\" />
+    <Folder Include="wwwroot\Downloads\ExcelFiles\" />
+    <Folder Include="wwwroot\Downloads\CSVFiles\" />
+    <Folder Include="wwwroot\Downloads\PDFFiles\" />
   </ItemGroup>
 
 </Project>

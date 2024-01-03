@@ -1,10 +1,20 @@
-﻿@using System.Net.Http
-@using System.Net.Http.Json
-@using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.Components.Routing
-@using Microsoft.AspNetCore.Components.Web
-@using static Microsoft.AspNetCore.Components.Web.RenderMode
-@using Microsoft.AspNetCore.Components.Web.Virtualization
-@using Microsoft.JSInterop
-@using EmptyProject
-@using EmptyProject.Components
+﻿@using System.Net.Http;
+@using System.Net.Http.Json;
+@using Microsoft.AspNetCore.Components.Forms;
+@using Microsoft.AspNetCore.Components.Routing;
+@using Microsoft.AspNetCore.Components.Web;
+@using static Microsoft.AspNetCore.Components.Web.RenderMode;
+@using Microsoft.AspNetCore.Components.Web.Virtualization;
+@using Microsoft.JSInterop;
+@using EmptyProject;
+@using EmptyProject.Components;
+@using ClosedXML.Excel;
+@using System.Data;
+@using IronPdf;
+@using CsvHelper;
+@using System.Globalization;
+@using EmptyProject.Components.Shared;
+@using EmptyProject.Areas.CMSCore.Repositories;
+@inject UserRepository userRepository;
+@inject StateContainer StateContainer;
+@inject NavigationManager NavigationManager;

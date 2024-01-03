@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -58,13 +59,43 @@ namespace EmptyProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Test",
+                columns: table => new
+                {
+                    TestId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Boolean = table.Column<byte>(type: "tinyint", nullable: false),
+                    DateTime = table.Column<DateTime>(type: "datetime", nullable: false),
+                    Decimal = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    ForeignKeyDropdown = table.Column<int>(type: "int", nullable: false),
+                    ForeignKeyOptions = table.Column<int>(type: "int", nullable: false),
+                    Integer = table.Column<int>(type: "int", nullable: false),
+                    Basic = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(380)", maxLength: 380, nullable: false),
+                    File = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HexColour = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: true),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Tag = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TextArea = table.Column<string>(type: "text", maxLength: 2000, nullable: false),
+                    TextEditor = table.Column<string>(type: "text", maxLength: 2000, nullable: true),
+                    URL = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Time = table.Column<TimeOnly>(type: "time(7)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Test", x => x.TestId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "User",
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Email = table.Column<string>(type: "nvarchar(380)", maxLength: 380, nullable: true),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RoleId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,7 +126,11 @@ namespace EmptyProject.Migrations
             migrationBuilder.InsertData(
                 table: "Role",
                 columns: new[] { "RoleId", "Name" },
-                values: new object[] { 1, "Administrator" });
+                values: new object[,]
+                {
+                    { 1, "Administrator" },
+                    { 2, "Client" }
+                });
 
             migrationBuilder.InsertData(
                 table: "RoleMenu",
@@ -108,8 +143,8 @@ namespace EmptyProject.Migrations
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "UserId", "Email", "Password" },
-                values: new object[] { 1, "novillo.matias1@gmail.com", "Pq5FM4q7dDtlZBGcn0w8P0XjnEPDlTCcLUY5/bWVcuVJ4/kXRyHp62hPgry0R/ur+kEspHc+HK6XqqvA8OLXLw==" });
+                columns: new[] { "UserId", "Email", "Password", "RoleId" },
+                values: new object[] { 1, "novillo.matias1@gmail.com", "Pq5FM4q7dDtlZBGcn0w8P0XjnEPDlTCcLUY5/bWVcuVJ4/kXRyHp62hPgry0R/ur+kEspHc+HK6XqqvA8OLXLw==", 1 });
         }
 
         /// <inheritdoc />
@@ -123,6 +158,9 @@ namespace EmptyProject.Migrations
 
             migrationBuilder.DropTable(
                 name: "RoleMenu");
+
+            migrationBuilder.DropTable(
+                name: "Test");
 
             migrationBuilder.DropTable(
                 name: "User");

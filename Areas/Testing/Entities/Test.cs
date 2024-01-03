@@ -20,5 +20,10 @@
         public string? TextEditor { get; set; }
         public string? URL { get; set; }
         public TimeOnly Time {  get; set; }
+
+        public string ToStringOnlyValuesForHTML()
+        {
+            return $@"";
+        }
     }
 }
