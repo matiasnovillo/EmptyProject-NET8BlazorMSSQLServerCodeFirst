@@ -7,7 +7,6 @@
         public DateTime DateTime { get; set; }
         public decimal Decimal { get; set; }
         public int ForeignKeyDropdown { get; set; }
-        public int ForeignKeyOptions { get; set; }
         public int Integer { get; set; }
         public string? Basic {  get; set; }
         public string? Email { get; set; }
@@ -17,7 +16,6 @@
         public string? PhoneNumber { get; set; }
         public string? Tag { get; set; }
         public string? TextArea { get; set; }
-        public string? TextEditor { get; set; }
         public string? URL { get; set; }
         public TimeOnly Time {  get; set; }
 

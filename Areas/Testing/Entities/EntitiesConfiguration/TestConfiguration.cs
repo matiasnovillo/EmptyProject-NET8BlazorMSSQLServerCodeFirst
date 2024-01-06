@@ -34,11 +34,6 @@ namespace EmptyProject.Areas.Testing.Entities.EntitiesConfiguration
                     .HasColumnType("int")
                     .IsRequired(true);
 
-                //ForeignKeyOptions
-                entity.Property(e => e.ForeignKeyOptions)
-                    .HasColumnType("int")
-                    .IsRequired(true);
-
                 //Integer
                 entity.Property(e => e.Integer)
                     .HasColumnType("int")
@@ -79,12 +74,6 @@ namespace EmptyProject.Areas.Testing.Entities.EntitiesConfiguration
                 entity.Property(e => e.TextArea)
                     .HasColumnType("text")
                     .IsRequired(true)
-                    .HasMaxLength(2000);
-
-                //TextEditor
-                entity.Property(e => e.TextEditor)
-                    .HasColumnType("text")
-                    .IsRequired(false)
                     .HasMaxLength(2000);
 
                 //URL

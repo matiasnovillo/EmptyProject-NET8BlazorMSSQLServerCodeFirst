@@ -1,6 +1,6 @@
-﻿@page "/TestPage"
-
+﻿@page "/Testing/TestPage"
 @using EmptyProject.Areas.CMSCore.Entities;
+@using EmptyProject.Areas.CMSCore.Repositories;
 @using EmptyProject.Areas.CMSCore.DTOs;
 @using EmptyProject.Areas.Testing.Repositories;
 @using EmptyProject.Areas.Testing.Entities;
@@ -8,6 +8,7 @@
 @using EmptyProject.Components.Shared;
 @inject UserRepository userRepository;
 @inject MenuRepository menuRepository;
+@inject RoleRepository roleRepository;
 @inject RoleMenuRepository rolemenuRepository;
 @inject TestRepository testRepository;
 
@@ -15,29 +16,6 @@
 
 <EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstMenuResult"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
 
-@code{
-    public List<Menu?> lstMenuResult { get; set; }
-
-    protected override void OnInitialized()
-    {
-        //Look for saved user in shared component, simulates a session
-        User = StateContainer.User == null ? new() : StateContainer.User;
-
-        lstMenuResult = [];
-
-        if (User.UserId != 0)
-        {
-            //Logged user
-
-            List<Menu?> lstMenu = menuRepository
-                                    .GetAll(CancellationToken.None);
-
-            lstMenuResult = rolemenuRepository
-                                .GetAllByRoleId(User.RoleId, lstMenu);
-
-        }
-    }
-}
 <div class="main-content position-relative max-height-vh-100 h-100">
     <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
     <div class="container-fluid px-2 px-md-4">
@@ -54,7 +32,7 @@
                     <span class="fas fa-chevron-left" aria-hidden="true"></span>
                     &nbsp;Go back
                 </NavLink>
-                <NavLink class="btn btn-success text-white" href="TestPage/0">
+                <NavLink class="btn btn-success text-white" href="Testing/TestPage/0">
                     <span class="fas fa-plus" aria-hidden="true"></span>
                     &nbsp;Create test
                 </NavLink>
@@ -209,7 +187,6 @@
                                         <td>@test?.DateTime</td>
                                         <td>@test?.Decimal</td>
                                         <td>@test?.ForeignKeyDropdown</td>
-                                        <td>@test?.ForeignKeyOptions</td>
                                         <td>@test?.Integer</td>
                                         <td>@test?.Basic</td>
                                         <td>
@@ -245,7 +222,6 @@
                                             @test?.Tag
                                         </td>
                                         <td>@test?.TextArea</td>
-                                        <td>@test?.TextEditor</td>
                                         <td>
                                             <a class="nav-link text-info"
                                                href="@test?.URL"
@@ -264,7 +240,7 @@
                                             </div>
                                             <div class="nav-item mt-2">
                                                 <a class="btn btn-sm btn-outline-info"
-                                                   href="TestPage/@test?.TestId">
+                                                   href="Testing/TestPage/@test?.TestId">
                                                     <span class="fas fa-pen" aria-hidden="true"></span>
                                                 </a>
                                             </div>
@@ -305,7 +281,6 @@
                                         <p><b>DateTime: </b>@test?.DateTime</p>
                                         <p><b>Decimal: </b>@test?.Decimal</p>
                                         <p><b>ForeignKeyDropdown: </b>@test?.ForeignKeyDropdown</p>
-                                        <p><b>ForeignKeyOptions: </b>@test?.ForeignKeyOptions</p>
                                         <p><b>Integer: </b>@test?.Integer</p>
                                         <p><b>Basic: </b>@test?.Basic</p>
                                     <a class="nav-link text-info px-0"
@@ -335,7 +310,6 @@
                                         </a>
                                         <p><b>Tag: </b>@test?.Tag</p>
                                         <div><b>TextArea: </b>@test?.TextArea</div>
-                                        <div><b>TextEditor: </b>@test?.TextEditor</div>
                                     <a class="nav-link text-info px-0"
                                             href="@test?.URL"
                                             target="_blank">
@@ -356,7 +330,7 @@
                                                 <span class="fas fa-trash" aria-hidden="true"></span>
                                             </button>
                                             <a class="btn btn-lg btn-outline-info"
-                                               href="TestPage/@test?.TestId">
+                                               href="Testing/TestPage/@test?.TestId">
                                                 <span class="fas fa-pen" aria-hidden="true"></span>
                                             </a>
                                         </div>
@@ -406,6 +380,8 @@
 
 @code {
     #region Properties
+    public List<Menu?> lstMenuResult { get; set; }
+
     public int TotalRows { get; set; } = 0;
 
     public string? ChosenView { get; set; }
@@ -435,16 +411,25 @@
 
     protected override async Task<bool> OnInitializedAsync()
     {
-        User = StateContainer.User;
+        //Look for saved user in shared component, simulates a session
+        User = StateContainer.User == null ? new() : StateContainer.User;
+
+        lstMenuResult = [];
+
+        paginatedTestDTO = new();
+        paginatedTestDTO.lstTest = [];
 
         if (User != null)
         {
-            paginatedTestDTO = new();
-            paginatedTestDTO.lstTest = [];
-
             if (User.UserId != 0)
             {
                 //Logged user
+
+                List<Menu?> lstMenu = await menuRepository
+                                                .GetAll(CancellationToken.None);
+
+                lstMenuResult = await rolemenuRepository
+                                        .GetAllByRoleId(User.RoleId, lstMenu);
 
                 paginatedTestDTO = await testRepository
                                             .GetAllByTestIdPaginated(
@@ -631,7 +616,7 @@
             dtTestCopy.Columns.Add(dtColumn1);
             #endregion
 
-            lstTest = testRepository
+            lstTest = await testRepository
                         .GetAll(CancellationToken.None);
 
             foreach (Test? Test in lstTest)
@@ -666,7 +651,7 @@
             //Set initial state
             ErrorMessage = "";
 
-            List<Test?> lstTest = testRepository
+            List<Test?> lstTest = await testRepository
                                     .GetAll(CancellationToken.None);
 
             DownloadPathForCSV = $@"wwwroot/Downloads/CSVFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.csv";
@@ -701,7 +686,7 @@
             var Renderer = new HtmlToPdf();
             string RowsAsHTML = "";
 
-            List<Test?> lstTest = testRepository
+            List<Test?> lstTest = await testRepository
                                     .GetAll(CancellationToken.None);
 
             DownloadPathForPDF = $@"wwwroot/Downloads/PDFFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.pdf";

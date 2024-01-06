@@ -41,31 +41,34 @@
                     </span>
                 </NavLink>
             </li>
-            @foreach (Menu menu in lstMenuResult)
+            @if (lstMenuResult != null)
             {
-                if (menu.MenuFatherId == 0)
+                @foreach (Menu menu in lstMenuResult)
                 {
-                    @* <li class="nav-item mt-0">
-                        <NavLink class="nav-link text-danger"
-                                 href="javascript:void(0);">
+                    if (menu.MenuFatherId == 0)
+                    {
+                        @* <li class="nav-item mt-0">
+                            <NavLink class="nav-link text-danger"
+                            href="javascript:void(0);">
                             <span class="nav-link-text ms-2 ps-1">
-                                <i class="fas fa-folder"></i>&nbsp;
-                                @menu.Name
+                            <i class="fas fa-folder"></i>&nbsp;
+                            @menu.Name
                             </span>
-                        </NavLink>
-                    </li> *@
-                }
-                else
-                {
-                    <li class="nav-item mt-0">
-                        <NavLink class="nav-link text-white"
-                                 href="@menu.URLPath">
-                            <span class="nav-link-text ms-2 ps-1">
-                                <i class="fas fa-file"></i>&nbsp;
-                                @menu.Name
-                            </span>
-                        </NavLink>
-                    </li>
+                            </NavLink>
+                            </li> *@
+                    }
+                    else
+                    {
+                        <li class="nav-item mt-0">
+                            <NavLink class="nav-link text-white"
+                                     href="@menu.URLPath">
+                                <span class="nav-link-text ms-2 ps-1">
+                                    <i class="fas fa-file"></i>&nbsp;
+                                    @menu.Name
+                                </span>
+                            </NavLink>
+                        </li>
+                    }
                 }
             }
         </ul>

@@ -49,22 +49,25 @@
                 <h4 class="mt-4 mb-4">
                     Pages
                 </h4>
-                @foreach (Menu menu in lstMenuResult)
-                {
-                    if (menu.MenuFatherId == 0)
+                @if (lstMenuResult != null)
                     {
-                        @* <h6 class="mt-4">
-                            <i class="fas fa-folder"></i>&nbsp;
-                            @menu.Name
-                        </h6> *@
-                    }
-                    else
+                    @foreach (Menu menu in lstMenuResult)
                     {
-                        <NavLink class="btn bg-gradient-primary mx-1 my-1"
-                                    href="@menu.URLPath">
-                            <i class="fas fa-file"></i>&nbsp;
+                        if (menu.MenuFatherId == 0)
+                        {
+                            @* <h6 class="mt-4">
+                <i class="fas fa-folder"></i>&nbsp;
+                @menu.Name
+                </h6> *@
+                        }
+                        else
+                        {
+                            <NavLink class="btn bg-gradient-primary mx-1 my-1"
+                                        href="@menu.URLPath">
+                                <i class="fas fa-file"></i>&nbsp;
                                 @menu.Name
-                        </NavLink>
+                            </NavLink>
+                        }
                     }
                 }
             </div>
@@ -78,12 +81,10 @@
     #region Properties
     public EmptyProject.Areas.CMSCore.Entities.User? User { get; set; }
 
-    public bool Toggle { get; set; } = false;
-
     public List<Menu?> lstMenuResult { get; set; }
     #endregion
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         //Look for saved user in shared component, simulates a session
         User = StateContainer.User == null ? new() : StateContainer.User;
@@ -91,19 +92,17 @@
         if (User.UserId != 0)
         {
             //Logged user
-            Toggle = true;
 
-            List<Menu?> lstMenu = menuRepository
-                                    .GetAll(CancellationToken.None);
+            List<Menu?> lstMenu = await menuRepository
+                                            .GetAll(CancellationToken.None);
 
-            lstMenuResult = rolemenuRepository
-                                .GetAllByRoleId(User.RoleId, lstMenu);
+            lstMenuResult = await rolemenuRepository
+                                        .GetAllByRoleId(User.RoleId, lstMenu);
 
         }
         else
         {
             //Not logged user
-            Toggle = false;
 
             //Redirect to...
             NavigationManager.NavigateTo("Login");

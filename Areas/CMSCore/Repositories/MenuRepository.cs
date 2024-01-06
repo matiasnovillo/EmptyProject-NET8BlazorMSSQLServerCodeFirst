@@ -34,37 +34,16 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                         .FirstOrDefault(x => x.MenuId == roleId);
         }
 
-        public List<Menu?> GetAll(CancellationToken cancellationToken)
+        public async Task<List<Menu?>> GetAll(CancellationToken cancellationToken)
         {
-            List<Menu?> lstMenu = [];
-
-            var GetAllQuery =
-                    from x in _context.Menu
-                    select new
-                    {
-                        x.MenuId,
-                        x.Name,
-                        x.MenuFatherId,
-                        x.URLPath,
-                        x.IconURLPath,
-                        x.Active
-                    };
-
-            foreach (var x in GetAllQuery)
+            try
             {
-                Menu roleEntity = new()
-                {
-                    MenuId = x.MenuId,
-                    Name = x.Name,
-                    MenuFatherId = x.MenuFatherId,
-                    URLPath = x.URLPath,
-                    IconURLPath = x.IconURLPath,
-                    Active = x.Active
-                };
-                lstMenu.Add(roleEntity);
+                return await _context.Menu.ToListAsync();
             }
-
-            return lstMenu;
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<paginatedMenuDTO> GetAllByMenuIdPaginated(string textToSearch,

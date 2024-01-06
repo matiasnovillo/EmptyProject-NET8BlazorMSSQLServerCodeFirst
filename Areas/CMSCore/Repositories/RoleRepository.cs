@@ -34,29 +34,16 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                         .FirstOrDefault(x => x.RoleId == roleId);
         }
 
-        public List<Role?> GetAll(CancellationToken cancellationToken)
+        public async Task<List<Role>> GetAll(CancellationToken cancellationToken)
         {
-            List<Role?> lstRole = [];
-
-            var GetAllQuery =
-                    from x in _context.Role
-                    select new
-                    {
-                        x.RoleId,
-                        x.Name
-                    };
-
-            foreach (var x in GetAllQuery)
+            try
             {
-                Role roleEntity = new()
-                {
-                    RoleId = x.RoleId,
-                    Name = x.Name
-                };
-                lstRole.Add(roleEntity);
+                return await _context.Role.ToListAsync();
             }
-
-            return lstRole;
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<paginatedRoleDTO> GetAllByRoleIdPaginated(string textToSearch,

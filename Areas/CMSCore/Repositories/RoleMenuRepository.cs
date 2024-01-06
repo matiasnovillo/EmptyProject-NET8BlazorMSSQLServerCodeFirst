@@ -34,31 +34,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                         .FirstOrDefault(x => x.RoleMenuId == roleId);
         }
 
-        public List<RoleMenu?> GetAll(CancellationToken cancellationToken)
+        public async Task<List<RoleMenu?>> GetAll(CancellationToken cancellationToken)
         {
-            List<RoleMenu?> lstRoleMenu = [];
-
-            var GetAllQuery =
-                    from x in _context.RoleMenu
-                    select new
-                    {
-                        x.RoleMenuId,
-                        x.RoleId,
-                        x.MenuId
-                    };
-
-            foreach (var x in GetAllQuery)
-            {
-                RoleMenu roleEntity = new()
-                {
-                    RoleMenuId = x.RoleMenuId,
-                    RoleId = x.RoleId,
-                    MenuId = x.MenuId
-                };
-                lstRoleMenu.Add(roleEntity);
-            }
-
-            return lstRoleMenu;
+            return await _context.RoleMenu.ToListAsync();
         }
 
         public async Task<paginatedRoleMenuDTO> GetAllByRoleMenuIdPaginated(string textToSearch,
@@ -93,9 +71,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             };
         }
 
-        public List<Menu> GetAllByRoleId(int roleId, List<Menu> lstMenu)
+        public async Task<List<Menu>> GetAllByRoleId(int roleId, List<Menu> lstMenu)
         {
-            List<RoleMenu> lstRoleMenu = GetAll(CancellationToken.None);
+            List<RoleMenu> lstRoleMenu = await GetAll(CancellationToken.None);
 
             var lstMenuResult = (from rm in lstRoleMenu
                                       where rm.RoleId == roleId
@@ -107,9 +85,9 @@ namespace EmptyProject.Areas.CMSCore.Repositories
             return lstMenuResult;
         }
 
-        public List<MenuWithStateDTO> GetAllWithStateByRoleId(int roleId, List<Menu> lstMenu)
+        public async Task<List<MenuWithStateDTO>> GetAllWithStateByRoleId(int roleId, List<Menu> lstMenu)
         {
-            List<RoleMenu> lstRoleMenu = GetAll(CancellationToken.None);
+            List<RoleMenu> lstRoleMenu = await GetAll(CancellationToken.None);
 
             var lstMenuWithState = lstMenu
                 .Select(menu =>

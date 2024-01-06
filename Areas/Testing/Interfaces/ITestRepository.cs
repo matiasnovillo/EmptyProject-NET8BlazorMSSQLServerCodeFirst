@@ -10,9 +10,9 @@ namespace EmptyProject.Areas.Testing.Interfaces
         #region Queries
         Task<int> Count(CancellationToken cancellationToken);
 
-        Test? GetByTestId(int testId, CancellationToken cancellationToken);
+        Task<Test?> GetByTestId(int testId, CancellationToken cancellationToken);
 
-        List<Test?> GetAll(CancellationToken cancellationToken);
+        Task<List<Test?>> GetAll(CancellationToken cancellationToken);
 
         Task<paginatedTestDTO> GetAllByTestIdPaginated(string textToSearch,
             bool strictSearch,

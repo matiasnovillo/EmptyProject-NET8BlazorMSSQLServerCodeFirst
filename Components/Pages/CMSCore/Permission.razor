@@ -105,7 +105,7 @@
     public List<Role?> lstAllRole { get; set; }
     #endregion
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         //Look for saved user in shared component, simulates a session
         User = StateContainer.User == null ? new() : StateContainer.User;
@@ -115,16 +115,16 @@
             //Logged user
             Toggle = true;
 
-            List<Menu> lstMenu = menuRepository
-                                    .GetAll(CancellationToken.None);
+            List<Menu> lstMenu = await menuRepository
+                                        .GetAll(CancellationToken.None);
 
-            lstAllMenuByRoleId = rolemenuRepository
-                                    .GetAllByRoleId(User.RoleId, lstMenu);
+            lstAllMenuByRoleId = await rolemenuRepository
+                                        .GetAllByRoleId(User.RoleId, lstMenu);
 
-            lstAllMenuByRoleIdNavBarVerticalDashboard = rolemenuRepository
+            lstAllMenuByRoleIdNavBarVerticalDashboard = await rolemenuRepository
                                                             .GetAllByRoleId(User.RoleId, lstMenu);
 
-            lstAllRole = roleRepository
+            lstAllRole = await roleRepository
                             .GetAll(CancellationToken.None);
 
             lstMenuWithState = [];
@@ -139,23 +139,23 @@
         }
     }
 
-    private void ChooseRole(string chosenRole)
+    private async Task ChooseRole(string chosenRole)
     {
         try
         {
-            List<Menu?> lstAllMenu = menuRepository
-                                    .GetAll(CancellationToken.None);
+            List<Menu?> lstAllMenu = await menuRepository
+                                            .GetAll(CancellationToken.None);
 
             if (chosenRole == "Administrator")
             {
-                lstMenuWithState = rolemenuRepository
-                                    .GetAllWithStateByRoleId(1, lstAllMenu); //Role 1: Administrator
+                lstMenuWithState = await rolemenuRepository
+                                            .GetAllWithStateByRoleId(1, lstAllMenu); //Role 1: Administrator
                 ChosenRole = 1;
             }
             else
             {
-                lstMenuWithState = rolemenuRepository
-                                    .GetAllWithStateByRoleId(2, lstAllMenu); //Role 2: Client
+                lstMenuWithState = await rolemenuRepository
+                                            .GetAllWithStateByRoleId(2, lstAllMenu); //Role 2: Client
 
                 ChosenRole = 2;
             }

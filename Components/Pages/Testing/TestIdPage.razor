@@ -1,0 +1,421 @@
+﻿@page "/Testing/TestPage/{TestId:int}"
+@using EmptyProject.Areas.CMSCore.Entities;
+@using EmptyProject.Areas.CMSCore.Repositories;
+@using EmptyProject.Areas.Testing.Entities;
+@using EmptyProject.Areas.Testing.Repositories;
+@using EmptyProject.Components.Shared
+@inject UserRepository userRepository;
+@inject MenuRepository menuRepository;
+@inject RoleRepository roleRepository;
+@inject RoleMenuRepository rolemenuRepository;
+@inject TestRepository testRepository;
+@inject StateContainer StateContainer
+@inject NavigationManager NavigationManager
+
+<PageTitle>Editar usuario - EmptyProject</PageTitle>
+
+<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstMenuResult"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
+
+<div class="main-content position-relative max-height-vh-100 h-100">
+    <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
+    <div class="container-fluid px-2 px-md-4">
+        <div class="page-header min-height-300 border-radius-xl mt-4"
+             style="background-image: url('assets/img/illustrations/Landscape2.jpg');">
+            <span class="mask bg-gradient-primary opacity-6"></span>
+        </div>
+        <div class="card card-body mx-3 mx-md-4 mt-n6">
+            <div class="card-header mb-0 pb-0 bg-white">
+                <h1 class="mb-3">
+                    @if(TestId == 0)
+                    {
+                        <span>Add test</span>
+                    }
+                    else
+                    {
+                        <span>Edit test</span>
+                    }
+                </h1>
+                <NavLink class="btn btn-outline-info" href="Testing/TestPage">
+                    <span class="fas fa-chevron-left"></span>
+                    &nbsp;Go back
+                </NavLink>
+            </div>
+            <div class="card-body px-0">
+                <form method="post" @onsubmit="Submit"
+                      @formname="test-form" class="mb-4">
+                    <AntiforgeryToken />
+                    <!--Boolean-->
+                    <div class="form-check form-switch">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               name="strict-search"
+                               @bind="Test!.Boolean"
+                               id="boolean" />
+                        <label class="form-check-label"
+                               for="boolean">
+                            Boolean
+                        </label>
+                    </div>
+                    <!--DateTime-->
+                    <div class="mb-3">
+                        <label for="datetime"
+                                class="input-group input-group-static">
+                                Datetime
+                        </label>
+                        <input type="datetime-local"
+                               id="datetime"
+                               class="form-control"
+                               @bind="Test!.DateTime"/>
+                    </div>
+                    <!--Decimal-->
+                    <div class="mb-3">
+                        <label for="decimal"
+                               class="input-group input-group-static">
+                            Decimal
+                        </label>
+                        <input type="number"
+                               step="0.1"
+                               id="decimal"
+                               class="form-control"
+                               @bind="Test!.Decimal" />
+                    </div>
+                    <!--ForeignKeyDropDown-->
+                    <div class="mb-3">
+                        <label for="foreignkeydropdown"
+                               class="input-group input-group-static">
+                            ForeignKeyDropdown
+                        </label>
+                        <select id="foreignkeydropdown"
+                            class="form-control"
+                            @bind=Test.ForeignKeyDropdown>
+                            @if (lstRole != null)
+                            {
+                                @foreach (Role? role in lstRole)
+                                {
+                                    <option value=@role?.RoleId>@role?.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <!--Integer-->
+                    <div class="mb-3">
+                        <label for="integer"
+                               class="input-group input-group-static">
+                            Integer
+                        </label>
+                        <input type="number"
+                               step="1"
+                               id="integer"
+                               class="form-control"
+                               @bind="Test!.Integer" />
+                    </div>
+                    <!--Basic-->
+                    <div class="mb-3">
+                        <label for="basic"
+                               class="input-group input-group-static">
+                            Basic
+                        </label>
+                        <input type="text"
+                               id="basic"
+                               class="form-control"
+                               @bind="Test!.Basic" />
+                    </div>
+                    <!--Email-->
+                    <div class="mb-3">
+                        <label for="email"
+                               class="input-group input-group-static">
+                            Email
+                        </label>
+                        <input type="email"
+                               id="email"
+                               class="form-control"
+                               @bind="Test!.Email" />
+                    </div>
+                    <!--File-->
+                    <div class="mb-3">
+                        <label for="file"
+                               class="input-group input-group-static">
+                            File
+                        </label>
+                        <InputFile type="file"
+                               id="file"
+                               class="form-control"
+                               OnChange="@UploadFile" />
+                        @{
+                            var ProgressCssForFile = "progress" + (DisplayProgressForFile ? "" : "d-none");
+                            var ProgressWidthStyleForFile = ProgressPercentForFile + "%";
+                        }
+                        <!--Progress bar-->
+                        <div class="@ProgressCssForFile">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated @ProgressBarColourForFile"
+                                 role="progressbar" style="width:@ProgressWidthStyleForFile"
+                                 area-valuenow="@ProgressPercentForFile" 
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                    <!--HexColour-->
+                    <div class="mb-3">
+                        <label for="hexcolour"
+                               class="input-group input-group-static">
+                            HexColour
+                        </label>
+                        <input type="color"
+                               id="hexcolour"
+                               class="form-control"
+                               @bind="Test!.HexColour" />
+                    </div>
+                    <!--Password-->
+                    <div class="mb-3">
+                        <label for="password"
+                               class="input-group input-group-static">
+                            Password
+                        </label>
+                        <input type="password"
+                               id="password"
+                               class="form-control"
+                               @bind="Test!.Password" />
+                    </div>
+                    <!--PhoneNumber-->
+                    <div class="mb-3">
+                        <label for="phonenumber"
+                               class="input-group input-group-static">
+                            PhoneNumber
+                        </label>
+                        <input type="tel"
+                               id="phonenumber"
+                               class="form-control"
+                               @bind="Test!.PhoneNumber" />
+                    </div>
+                    <!--Tag-->
+                    <div class="mb-3">
+                        <label for="tag"
+                               class="input-group input-group-static">
+                            Tag
+                        </label>
+                        <input type="text"
+                               id="tag"
+                               class="form-control"
+                               @bind="Test!.Tag"
+                               data-toggle="tags" />
+                    </div>
+                    <!--TextArea-->
+                    <div class="mb-3">
+                        <label for="textarea"
+                               class="input-group input-group-static">
+                            TextArea
+                        </label>
+                        <textarea rows="10"
+                            class="form-control"
+                            @bind="Test!.TextArea"
+                            id="textarea">
+                        </textarea>
+                    </div>
+                    <!--URL-->
+                    <div class="mb-3">
+                        <label for="url"
+                               class="input-group input-group-static">
+                            URL
+                        </label>
+                        <input type="url"
+                               id="url"
+                               class="form-control"
+                               @bind="Test!.URL" />
+                    </div>
+                    <!--Time-->
+                    <div class="mb-3">
+                        <label for="time"
+                               class="input-group input-group-static">
+                            Time
+                        </label>
+                        <input type="time"
+                               id="time"
+                               class="form-control"
+                               @bind="Test!.Time" />
+                    </div>
+                    <hr />
+                    <button id="btn-submit" type="submit"
+                            class="btn bg-gradient-primary">
+                        <i class="fas fa-pen"></i>
+                        @if (TestId == 0)
+                        {
+                            <span>Add</span>
+                        }
+                        else
+                        {
+                            <span>Edit</span>
+                        }
+                    </button>
+                    <NavLink class="btn btn-outline-info" href="Testing/TestPage">
+                        <span class="fas fa-chevron-left"></span>
+                        &nbsp;Go back
+                    </NavLink>
+                </form>
+                @if (MessageForForm != "")
+                {
+                    <span class="text-danger">
+                        @((MarkupString)MessageForForm)
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <EmptyProject.Components.Layout.FooterDashboard></EmptyProject.Components.Layout.FooterDashboard>
+</div>
+
+@code {
+    #region Properties
+    public List<Menu?> lstMenuResult { get; set; }
+
+    public List<Role?> lstRole { get; set; }
+
+    [Parameter]
+    public int TestId { get; set; }
+
+    public string MessageForForm { get; set; } = "";
+
+    [SupplyParameterFromForm]
+    public Test? Test { get; set; }
+
+    public User? User { get; set; }
+
+    //Progress bar for File
+    public bool DisplayProgressForFile { get; set; } = false;
+    public int ProgressPercentForFile { get; set; } = 0;
+    public string ProgressTextForFile { get; set; } = "";
+    public string ProgressBarColourForFile { get; set; } = "bg-info";
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            //Look for saved user in shared component, simulates a session
+            User = StateContainer.User == null ? new() : StateContainer.User;
+
+            lstMenuResult = [];
+            Test = new();
+
+            if (User != null)
+            {
+                if (User.UserId != 0)
+                {
+                    //Logged user
+
+                    List<Menu?> lstMenu = await menuRepository
+                                        .GetAll(CancellationToken.None);
+
+                    lstMenuResult = await rolemenuRepository
+                                        .GetAllByRoleId(User.RoleId, lstMenu);
+
+                    lstRole = await roleRepository.GetAll(CancellationToken.None);
+
+                    if (TestId == 0)
+                    {
+                        //Create new Test
+                        Test = new();
+                    }
+                    else
+                    {
+                        //Edit user
+                        //Populate user data
+                        Test = await testRepository
+                                    .GetByTestId(TestId, CancellationToken.None);
+                    }
+                }
+                else
+                {
+                    //Not logged user
+
+                    //Redirect to...
+                    NavigationManager.NavigateTo("Login");
+                }
+            }
+            else
+            {
+                //Impossible
+            }
+
+            base.OnInitialized();
+        }
+        catch (Exception ex)
+        {
+            MessageForForm = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void Submit()
+    {
+        try
+        {
+            if (TestId == 0)
+            {
+                //Create new Test
+                Test.TestId = 0;
+
+                await testRepository
+                        .Add(Test, CancellationToken.None);
+            }
+            else
+            {
+                //Update data
+                await testRepository
+                            .Update(Test, CancellationToken.None);
+            }
+
+            //Redirect to users page
+            NavigationManager.NavigateTo("Testing/TestPage");
+        }
+        catch (Exception ex)
+        {
+            MessageForForm = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void UploadFile(InputFileChangeEventArgs e)
+    {
+
+        try
+        {
+            DisplayProgressForFile = true;
+            ProgressPercentForFile = 80;
+            ProgressBarColourForFile = "bg-info";
+
+            string path = Path.Combine(
+                Environment.CurrentDirectory,
+                "wwwroot",
+                "Uploads",
+                "Testing",
+                "Test",
+                e.File.Name);
+
+            long MaxFileSize = 1024L * 1024L; //3MB max.
+
+            await using FileStream FileStream = new(path, FileMode.Create);
+            await e.File.OpenReadStream(MaxFileSize).CopyToAsync(FileStream);
+
+            FileStream.Close();
+
+            Test!.File = path;
+
+            ProgressPercentForFile = 100;
+            ProgressBarColourForFile = "bg-success";
+            DisplayProgressForFile = false;
+
+            //Re-render the page to show ScannedText
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            MessageForForm = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+
+            ProgressPercentForFile = 100;
+            ProgressBarColourForFile = "bg-danger";
+        }
+    }
+}
