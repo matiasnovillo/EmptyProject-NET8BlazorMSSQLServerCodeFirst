@@ -56,7 +56,7 @@ namespace EmptyProject.Areas.Testing.Entities.EntitiesConfiguration
                 //HexColour
                 entity.Property(e => e.HexColour)
                     .IsRequired(false)
-                    .HasMaxLength(6);
+                    .HasMaxLength(7);
 
                 //Password
                 entity.Property(e => e.Password)

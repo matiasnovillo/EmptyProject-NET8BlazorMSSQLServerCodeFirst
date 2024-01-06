@@ -374,6 +374,11 @@
             MessageForForm = $@"There was a mistake. Try again.
                              Error message: {ex.Message}";
         }
+        finally
+        {
+            //Re-render the page to show ScannedText
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+        }
     }
 
     private async void UploadFile(InputFileChangeEventArgs e)
@@ -405,9 +410,6 @@
             ProgressPercentForFile = 100;
             ProgressBarColourForFile = "bg-success";
             DisplayProgressForFile = false;
-
-            //Re-render the page to show ScannedText
-            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -416,6 +418,11 @@
 
             ProgressPercentForFile = 100;
             ProgressBarColourForFile = "bg-danger";
+        }
+        finally
+        {
+            //Re-render the page to show ScannedText
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
         }
     }
 }
