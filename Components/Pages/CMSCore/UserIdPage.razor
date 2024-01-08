@@ -1,0 +1,266 @@
+
+@page "/CMSCore/UserPage/{UserId:int}"
+@using EmptyProject.Areas.CMSCore.Repositories;
+@inject UserRepository userRepository;
+
+@if (UserId == 0)
+{
+    <PageTitle>Add user - EmptyProject</PageTitle>
+}
+else
+{
+    <PageTitle>Edit user - EmptyProject</PageTitle>
+}
+
+<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstMenuResult"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
+
+<div class="main-content position-relative max-height-vh-100 h-100">
+    <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
+    <div class="container-fluid px-2 px-md-4">
+        <div class="page-header min-height-300 border-radius-xl mt-4"
+             style="background-image: url('assets/img/illustrations/Landscape2.jpg');">
+            <span class="mask bg-gradient-primary opacity-6"></span>
+        </div>
+        <div class="card card-body mx-3 mx-md-4 mt-n6">
+            <div class="card-header mb-0 pb-0 bg-white">
+                <h1 class="mb-3">
+                    @if(UserId == 0)
+                    {
+                        <span>Add user</span>
+                    }
+                    else
+                    {
+                        <span>Edit user</span>
+                    }
+                </h1>
+                <NavLink class="btn btn-outline-info" href="CMSCore/UserPage">
+                    <span class="fas fa-chevron-left"></span>
+                    &nbsp;Go back
+                </NavLink>
+            </div>
+            <div class="card-body px-0">
+                <form method="post" @onsubmit="Submit"
+                      @formname="user-form" class="mb-4">
+                    <AntiforgeryToken />
+                    <!--Email-->
+                    <div class="mb-3">
+                        <label for="email"
+                               class="input-group input-group-static">
+                            Email
+                        </label>
+                        <input type="email"
+                               id="email"
+                               class="form-control"
+                               required
+                               @bind="User!.Email" />
+                    </div>
+                    <!--Password-->
+                    <div class="mb-3">
+                        <label for="password"
+                               class="input-group input-group-static">
+                            Password
+                        </label>
+                        <input type="password"
+                               id="password"
+                               required
+                               class="form-control"
+                               @bind="User!.Password" />
+                    </div>
+                    <!--RoleId-->
+                    <div class="mb-3">
+                        <label for="roleid"
+                               class="input-group input-group-static">
+                            RoleId
+                        </label>
+                        <select id="roleid"
+                            class="form-control"
+                            @bind=User.RoleId>
+                            <option value=0>Select a role</option>
+                            @if(lstRole != null)
+                            {
+                                @foreach (Role role in lstRole)
+                                {
+                                    <option value="@role.RoleId">@role.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    
+                    <hr />
+                    <button id="btn-submit" type="submit"
+                            class="btn bg-gradient-primary">
+                        <i class="fas fa-pen"></i>
+                        @if (UserId == 0)
+                        {
+                            <span>Add</span>
+                        }
+                        else
+                        {
+                            <span>Edit</span>
+                        }
+                    </button>
+                    <NavLink class="btn btn-outline-info" href="CMSCore/UserPage">
+                        <span class="fas fa-chevron-left"></span>
+                        &nbsp;Go back
+                    </NavLink>
+                </form>
+                @if (MessageForForm != "")
+                {
+                    <span class="text-danger">
+                        @((MarkupString)MessageForForm)
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <EmptyProject.Components.Layout.FooterDashboard></EmptyProject.Components.Layout.FooterDashboard>
+</div>
+
+@code {
+    #region Properties
+    public List<Menu?> lstMenuResult { get; set; }
+
+    public List<Role?> lstRole { get; set; }
+
+    [Parameter]
+    public int UserId { get; set; }
+
+    public string MessageForForm { get; set; } = "";
+
+    [SupplyParameterFromForm]
+    public User? User { get; set; }
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            //Look for saved user in shared component, simulates a session
+            User = StateContainer.User == null ? new() : StateContainer.User;
+
+            lstMenuResult = [];
+
+            if (User != null)
+            {
+                if (User.UserId != 0)
+                {
+                    //Logged user
+
+                    List<Menu?> lstMenu = await menuRepository
+                                        .GetAll(CancellationToken.None);
+
+                    lstMenuResult = await rolemenuRepository
+                                        .GetAllByRoleId(User.RoleId, lstMenu);
+
+                    lstRole = await roleRepository.GetAll(CancellationToken.None);
+
+                    if (UserId == 0)
+                    {
+                        //Create new User
+                        User = new();
+                    }
+                    else
+                    {
+                        //Edit user
+                        //Populate user data
+                        User = await userRepository
+                                    .GetByUserId(UserId, CancellationToken.None);
+                    }
+                }
+                else
+                {
+                    //Not logged user
+
+                    //Redirect to...
+                    NavigationManager.NavigateTo("Login");
+                }
+            }
+            else
+            {
+                //Impossible
+            }
+
+            base.OnInitialized();
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+                {
+                    Active = true,
+                    DateTimeCreation = DateTime.Now,
+                    DateTimeLastModification = DateTime.Now,
+                    UserCreationId = 1,
+                    UserLastModificationId = 1,
+                    EmergencyLevel = 1,
+                    Comment = "",
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace
+                };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            MessageForForm = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void Submit()
+    {
+        try
+        {
+            if (User?.RoleId == 0)
+            {
+                MessageForForm = $@"Please, select a role";
+            }
+
+            if (UserId == 0)
+            {
+                //Create new User
+                User!.UserId = 0;
+
+                await userRepository
+                        .Add(User, CancellationToken.None);
+            }
+            else
+            {
+                //Update data
+                await userRepository
+                            .Update(User, CancellationToken.None);
+            }
+
+            //Redirect to users page
+            NavigationManager.NavigateTo("CMSCore/UserPage");
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+                {
+                    Active = true,
+                    DateTimeCreation = DateTime.Now,
+                    DateTimeLastModification = DateTime.Now,
+                    UserCreationId = 1,
+                    UserLastModificationId = 1,
+                    EmergencyLevel = 1,
+                    Comment = "",
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace
+                };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            MessageForForm = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+        finally
+        {
+            //Re-render the page to show ScannedText
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+        }
+    }
+
+    
+}
+

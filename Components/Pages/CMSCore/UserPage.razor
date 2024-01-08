@@ -1,120 +1,265 @@
-﻿@page "/UserPage"
+
+@page "/CMSCore/UserPage"
 @using EmptyProject.Areas.CMSCore.Repositories;
-@using EmptyProject.Areas.CMSCore.Entities;
-@using EmptyProject.Components.Shared;
-@using EmptyProject.Areas.CMSCore.DTOs;
 @inject UserRepository userRepository;
-@inject StateContainer StateContainer;
 
-<PageTitle>UserQuery - EmptyProject</PageTitle>
+<PageTitle>Query User - EmptyProject</PageTitle>
 
-@if(Toggle)
-{
-    <!--Page for logged user-->
-    <div class="container">
-        <div class="card mb-3">
-            <div class="card-header">
-                <h1>
-                    <i class="fas fa-user"></i>
-                    Control de usuarios
+<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstMenuResult"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
+
+<div class="main-content position-relative max-height-vh-100 h-100">
+    <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
+    <div class="container-fluid px-2 px-md-4">
+        <div class="page-header min-height-300 border-radius-xl mt-4"
+             style="background-image: url('assets/img/illustrations/Landscape2.jpg');">
+            <span class="mask bg-gradient-primary opacity-6"></span>
+        </div>
+        <div class="card card-body mx-3 mx-md-4 mt-n6">
+            <div class="card-header mb-0 pb-0 bg-white">
+                <h1 class="mb-3">
+                    Query user
                 </h1>
-                <NavLink class="btn btn-success text-white mt-3" href="users/0">
+                <NavLink class="btn btn-outline-info" href="Dashboard">
+                    <span class="fas fa-chevron-left" aria-hidden="true"></span>
+                    &nbsp;Go back
+                </NavLink>
+                <NavLink class="btn btn-success text-white" href="CMSCore/UserPage/0">
                     <span class="fas fa-plus" aria-hidden="true"></span>
-                    &nbsp;Crear usuario
+                    &nbsp;Create user
                 </NavLink>
             </div>
-            <div class="card-body">
+            <div class="card-body px-0">
                 <p class="mb-3 text-danger">@ErrorMessage</p>
                 <p class="mb-3 text-success">@SuccessMessage</p>
-                <div class="card mb-3">
-                    <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <!--Searchbox-->
+                        <input type="search" @oninput="SearchText"
+                               class="form-control"
+                               placeholder="Search user by UserId..." />
+                        <br />
+                        <!--Strict or lax search-->
+                        <div>
+                            <h6><b>Strict or lax search</b></h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="strict-search"
+                                       @bind="checkStrict"
+                                       id="strict-search" />
+                                <label class="form-check-label"
+                                       for="strict-search">
+                                    Strict search
+                                </label>
+                            </div>
+                        </div>
+                        <br />
+                        <h6><b>View type</b></h6>
+                        <div class="btn-group mb-3" role="group" aria-label="btngroup">
+                            <button type="button" 
+                                class="btn bg-gradient-primary"
+                                onclick=@(() => ChangeView("table"))>
+                                <i class="fas fa-table"></i>
+                                Table
+                            </button>
+                            <button type="button" 
+                                class="btn bg-gradient-primary"
+                                onclick=@(() => ChangeView("list"))>
+                                <i class="fas fa-th-list"></i>
+                                Cards
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8">
                         <div class="row">
-                            <div class="col-12 col-md-4">
-                                <!--Searchbox-->
-                                <input type="search" @oninput="SearchText"
-                                       class="form-control"
-                                       placeholder="Buscar usuario..." />
-                                <br />
-                                <!--Búsqueda estricta-->
-                                <div class="mb-3">
-                                    <h6><b>Búsqueda estricta o laxa</b></h6>
-                                    <input type="checkbox" class="mx-4"
-                                           id="strict-search"
-                                           name="strict-search"
-                                           @bind="checkStrict" />
-                                    <label for="strict-search">
-                                        Búsqueda estricta
-                                    </label>
-                                </div>
+                            <div class="d-flex justify-content-end">
+                                <!--Export buttons-->
+                                <button type="button"
+                                        @onclick="ConvertToExcel"
+                                        class="btn btn-outline-info ml-4 mb-4">
+                                    <i class="fas fa-file"></i>
+                                    Export to Excel
+                                </button>
+                                <button type="button"
+                                        @onclick="ConvertToCSV"
+                                        class="btn btn-outline-warning mb-4 mx-3">
+                                    <i class="fas fa-file"></i>
+                                    Export to CSV
+                                </button>
+                                <button type="button"
+                                        @onclick="ConvertToPDF"
+                                        class="btn btn-outline-success mb-4">
+                                    <i class="fas fa-file"></i>
+                                    Export to PDF
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="d-flex justify-content-end">
+                                <!--Download buttons-->
+                                @if (ShowDownloadButtonForExcel)
+                                {
+                                    <a class="btn btn-info mb-4"
+                                       href="@DownloadPathForExcel"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
+                                @if (ShowDownloadButtonForCSV)
+                                {
+                                    <a class="btn btn-warning mb-4 mx-3"
+                                       href="@DownloadPathForCSV"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
+                                @if (ShowDownloadButtonForPDF)
+                                {
+                                    <a class="btn btn-success mb-4"
+                                       href="@DownloadPathForPDF"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
                 <!--Table-->
-                <h6><b>Cantidad de usuarios: @TotalRows</b></h6>
-                <table class="table table-striped table-hover table-bordered table-responsive mt-4">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuario</th>
-                            <th>Contraseña</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (paginatedUserDTO != null)
-                        {
-                            @foreach (User? user in paginatedUserDTO.lstUser)
+                <h6><b>Number of registers: @TotalRows</b></h6>
+                @if (ChosenView == "table")
+                {
+                    <table class="table table-striped table-hover table-bordered table-responsive mt-4">
+                        <thead>
+                            <tr>
+                                <th>UserId</th>
+                                <th>Active</th>
+                                <th>DateTimeCreation</th>
+                                <th>DateTimeLastModification</th>
+                                <th>UserCreationId</th>
+                                <th>UserLastModificationId</th>
+                                <th>Email</th>
+                                <th>Password</th>
+                                <th>RoleId</th>
+                                
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (paginatedUserDTO != null)
                             {
-                                <tr>
-                                    <td>@user?.UserId</td>
-                                    <td>@user?.Email</td>
-                                    <td>@user?.Password</td>
-                                    <td>
-                                        <div class="nav-item">
-                                            <button class="btn btn-sm btn-outline-danger"
+                                @foreach (User? user in paginatedUserDTO.lstUser)
+                                {
+                                    <tr>
+                                        <td>@user?.UserId</td>
+                                        <td>@user?.DateTimeCreation</td>
+                                        <td>@user?.DateTimeLastModification</td>
+                                        <td>@user?.UserCreationId</td>
+                                        <td>@user?.UserLastModificationId</td>
+                                        <td>
+    <a class="nav-link text-info"
+       href="mailto:@user?.Email">
+        <b class="fas fa-envelope"></b>
+        @user?.Email
+    </a>
+</td>
+                                        <td>@user?.Password</td>
+                                        <td>@user?.RoleId</td>
+                                        
+                                        <td>
+                                            <div class="nav-item">
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        onclick=@(() => Delete(user!.UserId))>
+                                                    <span class="fas fa-trash" aria-hidden="true"></span>
+                                                </button>
+                                            </div>
+                                            <div class="nav-item mt-2">
+                                                <a class="btn btn-sm btn-outline-info"
+                                                   href="CMSCore/UserPage/@user?.UserId">
+                                                    <span class="fas fa-pen" aria-hidden="true"></span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    @if (paginatedUserDTO != null)      
+                    {
+                        @foreach (User? user in paginatedUserDTO.lstUser)
+                        {
+                            <div class="card shadow-lg mt-2">
+                                <div class="card-body">
+                                        <p><b>UserId: </b>@user?.UserId</p>
+                                        <p><b>DateTimeCreation: </b>@user?.DateTimeCreation</p>
+                                        <p><b>DateTimeLastModification: </b>@user?.DateTimeLastModification</p>
+                                        <p><b>UserCreationId: </b>@user?.UserCreationId</p>
+                                        <p><b>UserLastModificationId: </b>@user?.UserLastModificationId</p>
+                                        <a class="nav-link text-info px-0"
+    href="mailto:@user?.Email">
+    <b>Email: </b>
+    <b class="fas fa-envelope"></b>
+    @user?.Email
+</a>
+                                        <p><b>Password: </b>@user?.Password</p>
+                                        <p><b>RoleId: </b>@user?.RoleId</p>
+                                        
+                                </div>
+                                <div class="card-footer text-body-secondary">
+                                    <div class="row">
+                                        <div class="col-10">
+                                            &nbsp;
+                                        </div>
+                                        <div class="col-2">
+                                            <button class="btn btn-lg btn-outline-danger"
                                                     onclick=@(() => Delete(user!.UserId))>
                                                 <span class="fas fa-trash" aria-hidden="true"></span>
                                             </button>
-                                        </div>
-                                        <div class="nav-item mt-2">
-                                            <a class="btn btn-sm btn-outline-info"
-                                               href="users/@user?.UserId">
+                                            <a class="btn btn-lg btn-outline-info"
+                                                href="CMSCore/UserPage/@user?.UserId">
                                                 <span class="fas fa-pen" aria-hidden="true"></span>
                                             </a>
                                         </div>
-                                    </td>
-                                </tr>
-                            }
+                                    </div>
+                                </div>
+                            </div>
                         }
-                    </tbody>
-                </table>
+                    }
+                }
+
                 <nav aria-label="Page navigation example">
                     <ul class="pagination justify-content-center">
-                        <li class="page-item 
-                            @(paginatedUserDTO.HasPreviousPage ? "" : "disabled")">
-                            <button class="page-link" 
-                            disabled="@(!paginatedUserDTO.HasPreviousPage)" 
-                            @onclick="() => OnPreviousPage()">
+                        <li class="page-item
+                        @(paginatedUserDTO!.HasPreviousPage ? "" : "disabled")">
+                            <button class="page-link"
+                                    disabled="@(!paginatedUserDTO.HasPreviousPage)"
+                                    @onclick="() => OnPreviousPage()">
                                 <i class="fas fa-chevron-left"></i>
                             </button>
                         </li>
                         @for (int i = 1; i <= paginatedUserDTO.TotalPages; i++)
                         {
                             int currentPage = i;
-                            <li class="page-item 
-                                @(i == paginatedUserDTO.PageIndex ? "active" : "")">
-                                <button class="page-link" 
+                            <li class="page-item
+                            @(i == paginatedUserDTO.PageIndex ? "active" : "")">
+                                <button class="page-link"
                                         onclick=@(() => OnPageSelected(currentPage))>
                                     @i
                                 </button>
                             </li>
                         }
-                        <li class="page-item 
-                            @(paginatedUserDTO.HasNextPage ? "" : "disabled")">
-                            <button class="page-link" 
-                            disabled="@(!paginatedUserDTO.HasNextPage)" 
-                            @onclick="() => OnNextPage()">
+                        <li class="page-item
+                        @(paginatedUserDTO.HasNextPage ? "" : "disabled")">
+                            <button class="page-link"
+                                    disabled="@(!paginatedUserDTO.HasNextPage)"
+                                    @onclick="() => OnNextPage()">
                                 <i class="fas fa-chevron-right"></i>
                             </button>
                         </li>
@@ -123,20 +268,18 @@
             </div>
         </div>
     </div>
-}
-else
-{
-    <!--Page for not logged user-->
-    <EmptyProject.Components.Layout.NotLogged></EmptyProject.Components.Layout.NotLogged>
-}
+    <EmptyProject.Components.Layout.FooterDashboard></EmptyProject.Components.Layout.FooterDashboard>
+</div>
 
 @code {
     #region Properties
+    public List<Menu?> lstMenuResult { get; set; }
+
     public int TotalRows { get; set; } = 0;
 
-    public bool checkStrict { get; set; }
+    public string? ChosenView { get; set; }
 
-    public bool Toggle { get; set; }
+    public bool checkStrict { get; set; }
 
     public string TextToSearch { get; set; } = "";
 
@@ -144,51 +287,93 @@ else
 
     public string SuccessMessage { get; set; } = "";
 
-    private User? User;
+    public bool ShowDownloadButtonForExcel { get; set; }
+    public bool ShowDownloadButtonForPDF { get; set; }
+    public bool ShowDownloadButtonForCSV { get; set; }
 
-    paginatedUserDTO paginatedUserDTO;
+    public string? DownloadPathForExcel { get; set; }
+    public string? DownloadPathForPDF { get; set; }
+    public string? DownloadPathForCSV { get; set; }
+
+    public User? User;
+
+    paginatedUserDTO? paginatedUserDTO;
     #endregion
 
-    protected override async Task<bool> OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        User = StateContainer.User;
-
-        if (User != null)
+        try
         {
-            if (User.UserId != 0)
+            //Look for saved user in shared component, simulates a session
+            User = StateContainer.User == null ? new() : StateContainer.User;
+
+            lstMenuResult = [];
+
+            paginatedUserDTO = new();
+            paginatedUserDTO.lstUser = [];
+
+            if (User != null)
             {
-                //Logged user
-                Toggle = true;
+                if (User.UserId != 0)
+                {
+                    //Logged user
 
-                paginatedUserDTO = new();
-                paginatedUserDTO.lstUser = [];
+                    List<Menu?> lstMenu = await menuRepository
+                                                    .GetAll(CancellationToken.None);
 
-                paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                "",
-                checkStrict,
-                1,
-                15,
-                CancellationToken.None);
+                    lstMenuResult = await rolemenuRepository
+                                            .GetAllByRoleId(User.RoleId, lstMenu);
 
-                TotalRows = await userRepository
-                    .Count(CancellationToken.None);
+                    paginatedUserDTO = await userRepository
+                                                .GetAllByUserIdPaginated(
+                                                    "",
+                                                    checkStrict,
+                                                    1,
+                                                    15,
+                                                    CancellationToken.None);
+
+                    TotalRows = await userRepository
+                                        .Count(CancellationToken.None);
+
+                    ChosenView = "list";
+                }
+                else
+                {
+                    //Not logged user
+
+                    //Redirect to...
+                    NavigationManager.NavigateTo("Login");
+                }
             }
             else
             {
-                //Not logged user
-                Toggle = false;
+                //Impossible
             }
+
+            base.OnInitialized();
         }
-        else
+        catch (Exception ex)
         {
-            //Impossible
-            Toggle = false;
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
         }
 
-        base.OnInitialized();
-
-        return true;
     }
 
     #region Events
@@ -199,21 +384,42 @@ else
             //Basic configuration
             SuccessMessage = "";
 
+            TextToSearch = args.Value.ToString();
+
             paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                args.Value.ToString(),
-                checkStrict,
-                1,
-                15,
-                CancellationToken.None);
+                                        .GetAllByUserIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            1,
+                                            15,
+                                            CancellationToken.None);
 
             TotalRows = await userRepository
                     .Count(CancellationToken.None);
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $@"Hubo un error. Intenta nuevamente.
-                            Mensaje de error: {ex.Message}";
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
         }
 
     }
@@ -223,13 +429,16 @@ else
         if (paginatedUserDTO.HasPreviousPage)
         {
             paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                TextToSearch,
-                checkStrict,
-                (paginatedUserDTO.PageIndex - 1),
-                paginatedUserDTO.PageSize,
-                CancellationToken.None);
+                                        .GetAllByUserIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            (paginatedUserDTO.PageIndex - 1),
+                                            paginatedUserDTO.PageSize,
+                                            CancellationToken.None);
         }
+
+        TotalRows = await userRepository
+                            .Count(CancellationToken.None);
 
         //Re-render the page
         await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
@@ -238,12 +447,15 @@ else
     async Task OnPageSelected(int pageIndex)
     {
         paginatedUserDTO = paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                TextToSearch,
-                checkStrict,
-                pageIndex,
-                paginatedUserDTO.PageSize,
-                CancellationToken.None);
+                                                        .GetAllByUserIdPaginated(
+                                                            TextToSearch,
+                                                            checkStrict,
+                                                            pageIndex,
+                                                            paginatedUserDTO.PageSize,
+                                                            CancellationToken.None);
+
+        TotalRows = await userRepository
+                            .Count(CancellationToken.None);
 
         //Re-render the page
         await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
@@ -254,46 +466,364 @@ else
         if (paginatedUserDTO.HasNextPage)
         {
             paginatedUserDTO = await userRepository
-            .GetAllByEmailPaginated(
-                TextToSearch,
-                checkStrict,
-                (paginatedUserDTO.PageIndex + 1),
-                paginatedUserDTO.PageSize,
-                CancellationToken.None);
+                                        .GetAllByUserIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            (paginatedUserDTO.PageIndex + 1),
+                                            paginatedUserDTO.PageSize,
+                                            CancellationToken.None);
         }
+
+        TotalRows = await userRepository
+                            .Count(CancellationToken.None);
 
         //Re-render the page
         await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
     }
 
-    private async void Delete(int UserId)
+    private async void ChangeView(string chosenView)
+    {
+        ChosenView = chosenView;
+
+        //Re-render the page
+        await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+    }
+
+    private async void Delete(int userId)
     {
         try
         {
-            await userRepository.DeleteByUserId(UserId, CancellationToken.None);
+            await userRepository.DeleteByUserId(userId, CancellationToken.None);
 
-            paginatedUserDTO = await userRepository.
-            GetAllByEmailPaginated("", 
-            checkStrict,
-            1,
-            15, 
-            CancellationToken.None);
+            paginatedUserDTO = await userRepository
+                                        .GetAllByUserIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            1,
+                                            15, 
+                                            CancellationToken.None);
 
             TotalRows = await userRepository
-                    .Count(CancellationToken.None);
+                                .Count(CancellationToken.None);
 
             TextToSearch = "";
+
+            SuccessMessage = "Register deleted correctly";
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+    #endregion
+
+    #region Conversions
+    private async void ConvertToExcel()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+
+            using var Book = new XLWorkbook();
+
+            DataTable dtUser = new DataTable();
+            dtUser.TableName = "User";
+
+            //We define another DataTable dtUserCopy to avoid issue related to DateTime conversion
+            DataTable dtUserCopy = new DataTable();
+            dtUserCopy.TableName = "User";
+
+            #region Define columns for dtUserCopy
+            DataColumn dtColumnUserIdFordtUserCopy = new DataColumn();
+            dtColumnUserIdFordtUserCopy.DataType = typeof(string);
+            dtColumnUserIdFordtUserCopy.ColumnName = "UserId";
+            dtUserCopy.Columns.Add(dtColumnUserIdFordtUserCopy);
+
+            DataColumn dtColumnActiveFordtUserCopy = new DataColumn();
+            dtColumnActiveFordtUserCopy.DataType = typeof(string);
+            dtColumnActiveFordtUserCopy.ColumnName = "Active";
+            dtUserCopy.Columns.Add(dtColumnActiveFordtUserCopy);
+
+            DataColumn dtColumnDateTimeCreationFordtUserCopy = new DataColumn();
+            dtColumnDateTimeCreationFordtUserCopy.DataType = typeof(string);
+            dtColumnDateTimeCreationFordtUserCopy.ColumnName = "DateTimeCreation";
+            dtUserCopy.Columns.Add(dtColumnDateTimeCreationFordtUserCopy);
+
+            DataColumn dtColumnDateTimeLastModificationFordtUserCopy = new DataColumn();
+            dtColumnDateTimeLastModificationFordtUserCopy.DataType = typeof(string);
+            dtColumnDateTimeLastModificationFordtUserCopy.ColumnName = "DateTimeLastModification";
+            dtUserCopy.Columns.Add(dtColumnDateTimeLastModificationFordtUserCopy);
+
+            DataColumn dtColumnUserCreationIdFordtUserCopy = new DataColumn();
+            dtColumnUserCreationIdFordtUserCopy.DataType = typeof(string);
+            dtColumnUserCreationIdFordtUserCopy.ColumnName = "UserCreationId";
+            dtUserCopy.Columns.Add(dtColumnUserCreationIdFordtUserCopy);
+
+            DataColumn dtColumnUserLastModificationIdFordtUserCopy = new DataColumn();
+            dtColumnUserLastModificationIdFordtUserCopy.DataType = typeof(string);
+            dtColumnUserLastModificationIdFordtUserCopy.ColumnName = "UserLastModificationId";
+            dtUserCopy.Columns.Add(dtColumnUserLastModificationIdFordtUserCopy);
+
+            DataColumn dtColumnEmailFordtUserCopy = new DataColumn();
+            dtColumnEmailFordtUserCopy.DataType = typeof(string);
+            dtColumnEmailFordtUserCopy.ColumnName = "Email";
+            dtUserCopy.Columns.Add(dtColumnEmailFordtUserCopy);
+
+            DataColumn dtColumnPasswordFordtUserCopy = new DataColumn();
+            dtColumnPasswordFordtUserCopy.DataType = typeof(string);
+            dtColumnPasswordFordtUserCopy.ColumnName = "Password";
+            dtUserCopy.Columns.Add(dtColumnPasswordFordtUserCopy);
+
+            DataColumn dtColumnRoleIdFordtUserCopy = new DataColumn();
+            dtColumnRoleIdFordtUserCopy.DataType = typeof(string);
+            dtColumnRoleIdFordtUserCopy.ColumnName = "RoleId";
+            dtUserCopy.Columns.Add(dtColumnRoleIdFordtUserCopy);
+
+            
+            #endregion
+
+            dtUser = await userRepository.GetAllInDataTable(CancellationToken.None);
+
+            foreach (DataRow DataRow in dtUser.Rows)
+            {
+                dtUserCopy.Rows.Add(DataRow.ItemArray);
+            }
+
+            var Sheet = Book.Worksheets.Add(dtUserCopy);
+
+            Sheet.ColumnsUsed().AdjustToContents();
+
+            DownloadPathForExcel = $@"wwwroot/Downloads/ExcelFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.xlsx";
+            Book.SaveAs(DownloadPathForExcel);
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForExcel = DownloadPathForExcel.Replace("wwwroot", "");
+
+            ShowDownloadButtonForExcel = true;
 
             //Re-render the page
             await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
 
-            SuccessMessage = "Usuario eliminado correctamente";
         }
         catch (Exception ex)
         {
-            ErrorMessage = $@"Hubo un error. Intenta nuevamente.
-                            Mensaje de error: {ex.Message}";
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+                        
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
         }
+    }
+
+    private async void ConvertToCSV()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+
+            List<User?> lstUser = await userRepository
+                                    .GetAll(CancellationToken.None);
+
+            DownloadPathForCSV = $@"wwwroot/Downloads/CSVFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.csv";
+
+            using (var Writer = new StreamWriter(DownloadPathForCSV))
+            using (var CsvWriter = new CsvWriter(Writer,
+                CultureInfo.InvariantCulture))
+            {
+                CsvWriter.WriteRecords(lstUser);
+            }
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForCSV = DownloadPathForCSV.Replace("wwwroot", "");
+
+            ShowDownloadButtonForCSV = true;
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);             
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+            
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void ConvertToPDF()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+            string ProjectName = "EmptyProject";
+            string Table = "User";
+            var Renderer = new HtmlToPdf();
+            string RowsAsHTML = "";
+
+            List<User?> lstUser = await userRepository
+                                    .GetAll(CancellationToken.None);
+
+            DownloadPathForPDF = $@"wwwroot/Downloads/PDFFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.pdf";
+
+            foreach (User? User in lstUser)
+            {
+                RowsAsHTML += $@"{User?.ToStringOnlyValuesForHTML()}";
+            }
+
+            Renderer.RenderHtmlAsPdf($@"<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""88%"" style=""width: 88% !important; min-width: 88%; max-width: 88%;"">
+    <tr>
+    <td align=""left"" valign=""top"">
+        <font face=""'Source Sans Pro', sans-serif"" color=""#1a1a1a"" style=""font-size: 52px; line-height: 55px; font-weight: 300; letter-spacing: -1.5px;"">
+            <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #1a1a1a; font-size: 52px; line-height: 55px; font-weight: 300; letter-spacing: -1.5px;"">Mikromatica</span>
+        </font>
+        <div style=""height: 25px; line-height: 25px; font-size: 23px;"">&nbsp;</div>
+        <font face=""'Source Sans Pro', sans-serif"" color=""#4c4c4c"" style=""font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;"">
+            <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #4c4c4c; font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;"">Registers of User</span>
+        </font>
+        <div style=""height: 35px; line-height: 35px; font-size: 33px;"">&nbsp;</div>
+    </td>
+    </tr>
+</table>
+<br>
+<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""100%"" style=""width: 100% !important; min-width: 100%; max-width: 100%;"">
+    <tr>
+        <th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">UserId&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Active&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">DateTimeCreation&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">DateTimeLastModification&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">UserCreationId&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">UserLastModificationId&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Email&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Password&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">RoleId&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th>
+    </tr>
+    {RowsAsHTML}
+</table>
+<br>
+<font face=""'Source Sans Pro', sans-serif"" color=""#868686"" style=""font-size: 17px; line-height: 20px;"">
+    <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #868686; font-size: 17px; line-height: 20px;"">Printed on: {DateTime.Now}</span>
+</font>
+").SaveAs(DownloadPathForPDF);
+
+            ShowDownloadButtonForPDF = true;
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForPDF = DownloadPathForPDF.Replace("wwwroot", "");
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+
     }
     #endregion
 }
+

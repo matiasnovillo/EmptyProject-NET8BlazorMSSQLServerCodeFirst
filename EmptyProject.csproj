@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\CMSCore\Interfaces\" />
     <Folder Include="Backup\" />
     <Folder Include="CommonFunctions\" />
     <Folder Include="Migrations\" />

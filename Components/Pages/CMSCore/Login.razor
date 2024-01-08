@@ -153,7 +153,7 @@
     }
 
     #region Events
-    private void Submit()
+    private async void Submit()
     {
         try
         {
@@ -162,7 +162,7 @@
                                             .EncodeString(User.Password);
 
             //Get user by email and password
-            User = userRepository
+            User = await userRepository
                         .GetByEmailAndPassword(User.Email,
                         EncryptedPassword,
                         CancellationToken.None);
