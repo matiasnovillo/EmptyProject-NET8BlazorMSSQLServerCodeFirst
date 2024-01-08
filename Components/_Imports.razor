@@ -16,3 +16,14 @@
 @using EmptyProject.Components.Shared;
 @inject StateContainer StateContainer;
 @inject NavigationManager NavigationManager;
+@using EmptyProject.Areas.CMSCore.Entities;
+@using EmptyProject.Areas.CMSCore.Repositories;
+@using EmptyProject.Areas.CMSCore.DTOs;
+@using EmptyProject.Areas.BasicCore.Repositories;
+@using EmptyProject.Areas.BasicCore.Entities;
+@using EmptyProject.Areas.BasicCore.DTOs;
+@inject UserRepository userRepository;
+@inject MenuRepository menuRepository;
+@inject RoleRepository roleRepository;
+@inject RoleMenuRepository rolemenuRepository;
+@inject FailureRepository failureRepository;

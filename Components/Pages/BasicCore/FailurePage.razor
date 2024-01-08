@@ -1,0 +1,845 @@
+
+@page "/BasicCore/FailurePage"
+@using EmptyProject.Areas.BasicCore.Repositories;
+@inject FailureRepository failureRepository;
+
+<PageTitle>Query Failure - EmptyProject</PageTitle>
+
+<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstMenuResult"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
+
+<div class="main-content position-relative max-height-vh-100 h-100">
+    <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
+    <div class="container-fluid px-2 px-md-4">
+        <div class="page-header min-height-300 border-radius-xl mt-4"
+             style="background-image: url('assets/img/illustrations/Landscape2.jpg');">
+            <span class="mask bg-gradient-primary opacity-6"></span>
+        </div>
+        <div class="card card-body mx-3 mx-md-4 mt-n6">
+            <div class="card-header mb-0 pb-0 bg-white">
+                <h1 class="mb-3">
+                    Query failure
+                </h1>
+                <NavLink class="btn btn-outline-info" href="Dashboard">
+                    <span class="fas fa-chevron-left" aria-hidden="true"></span>
+                    &nbsp;Go back
+                </NavLink>
+                <NavLink class="btn btn-success text-white" href="BasicCore/FailurePage/0">
+                    <span class="fas fa-plus" aria-hidden="true"></span>
+                    &nbsp;Create failure
+                </NavLink>
+            </div>
+            <div class="card-body px-0">
+                <p class="mb-3 text-danger">@ErrorMessage</p>
+                <p class="mb-3 text-success">@SuccessMessage</p>
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <!--Searchbox-->
+                        <input type="search" @oninput="SearchText"
+                               class="form-control"
+                               placeholder="Search failure by FailureId..." />
+                        <br />
+                        <!--Strict or lax search-->
+                        <div>
+                            <h6><b>Strict or lax search</b></h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="strict-search"
+                                       @bind="checkStrict"
+                                       id="strict-search" />
+                                <label class="form-check-label"
+                                       for="strict-search">
+                                    Strict search
+                                </label>
+                            </div>
+                        </div>
+                        <br />
+                        <h6><b>View type</b></h6>
+                        <div class="btn-group mb-3" role="group" aria-label="btngroup">
+                            <button type="button" 
+                                class="btn bg-gradient-primary"
+                                onclick=@(() => ChangeView("table"))>
+                                <i class="fas fa-table"></i>
+                                Table
+                            </button>
+                            <button type="button" 
+                                class="btn bg-gradient-primary"
+                                onclick=@(() => ChangeView("list"))>
+                                <i class="fas fa-th-list"></i>
+                                Cards
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <div class="row">
+                            <div class="d-flex justify-content-end">
+                                <!--Export buttons-->
+                                <button type="button"
+                                        @onclick="ConvertToExcel"
+                                        class="btn btn-outline-info ml-4 mb-4">
+                                    <i class="fas fa-file"></i>
+                                    Export to Excel
+                                </button>
+                                <button type="button"
+                                        @onclick="ConvertToCSV"
+                                        class="btn btn-outline-warning mb-4 mx-3">
+                                    <i class="fas fa-file"></i>
+                                    Export to CSV
+                                </button>
+                                <button type="button"
+                                        @onclick="ConvertToPDF"
+                                        class="btn btn-outline-success mb-4">
+                                    <i class="fas fa-file"></i>
+                                    Export to PDF
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="d-flex justify-content-end">
+                                <!--Download buttons-->
+                                @if (ShowDownloadButtonForExcel)
+                                {
+                                    <a class="btn btn-info mb-4"
+                                       href="@DownloadPathForExcel"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
+                                @if (ShowDownloadButtonForCSV)
+                                {
+                                    <a class="btn btn-warning mb-4 mx-3"
+                                       href="@DownloadPathForCSV"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
+                                @if (ShowDownloadButtonForPDF)
+                                {
+                                    <a class="btn btn-success mb-4"
+                                       href="@DownloadPathForPDF"
+                                       download>
+                                        <i class="fas fa-download"></i>
+                                        Descargar
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Table-->
+                <h6><b>Number of registers: @TotalRows</b></h6>
+                @if (ChosenView == "table")
+                {
+                    <table class="table table-striped table-hover table-bordered table-responsive mt-4">
+                        <thead>
+                            <tr>
+                                <th>FailureId</th>
+                                <th>Active</th>
+                                <th>DateTimeCreation</th>
+                                <th>DateTimeLastModification</th>
+                                <th>UserCreationId</th>
+                                <th>UserLastModificationId</th>
+                                <th>Message</th>
+                                <th>EmergencyLevel</th>
+                                <th>StackTrace</th>
+                                <th>Source</th>
+                                <th>Comment</th>
+                                
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (paginatedFailureDTO != null)
+                            {
+                                @foreach (Failure? failure in paginatedFailureDTO.lstFailure)
+                                {
+                                    <tr>
+                                        <td>@failure?.FailureId</td>
+                                        <td>@failure?.DateTimeCreation</td>
+                                        <td>@failure?.DateTimeLastModification</td>
+                                        <td>@failure?.UserCreationId</td>
+                                        <td>@failure?.UserLastModificationId</td>
+                                        <td>@failure?.Message</td>
+                                        <td>@failure?.EmergencyLevel</td>
+                                        <td>@failure?.StackTrace</td>
+                                        <td>@failure?.Source</td>
+                                        <td>@failure?.Comment</td>
+                                        
+                                        <td>
+                                            <div class="nav-item">
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        onclick=@(() => Delete(failure!.FailureId))>
+                                                    <span class="fas fa-trash" aria-hidden="true"></span>
+                                                </button>
+                                            </div>
+                                            <div class="nav-item mt-2">
+                                                <a class="btn btn-sm btn-outline-info"
+                                                   href="BasicCore/FailurePage/@failure?.FailureId">
+                                                    <span class="fas fa-pen" aria-hidden="true"></span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    @if (paginatedFailureDTO != null)      
+                    {
+                        @foreach (Failure? failure in paginatedFailureDTO.lstFailure)
+                        {
+                            <div class="card shadow-lg mt-2">
+                                <div class="card-body">
+                                        <p><b>FailureId: </b>@failure?.FailureId</p>
+                                        <p><b>DateTimeCreation: </b>@failure?.DateTimeCreation</p>
+                                        <p><b>DateTimeLastModification: </b>@failure?.DateTimeLastModification</p>
+                                        <p><b>UserCreationId: </b>@failure?.UserCreationId</p>
+                                        <p><b>UserLastModificationId: </b>@failure?.UserLastModificationId</p>
+                                        <div><b>Message: </b>@failure?.Message</div>
+                                        <p><b>EmergencyLevel: </b>@failure?.EmergencyLevel</p>
+                                        <div><b>StackTrace: </b>@failure?.StackTrace</div>
+                                        <div><b>Source: </b>@failure?.Source</div>
+                                        <div><b>Comment: </b>@failure?.Comment</div>
+                                        
+                                </div>
+                                <div class="card-footer text-body-secondary">
+                                    <div class="row">
+                                        <div class="col-10">
+                                            &nbsp;
+                                        </div>
+                                        <div class="col-2">
+                                            <button class="btn btn-lg btn-outline-danger"
+                                                    onclick=@(() => Delete(failure!.FailureId))>
+                                                <span class="fas fa-trash" aria-hidden="true"></span>
+                                            </button>
+                                            <a class="btn btn-lg btn-outline-info"
+                                                href="BasicCore/FailurePage/@failure?.FailureId">
+                                                <span class="fas fa-pen" aria-hidden="true"></span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item
+                        @(paginatedFailureDTO!.HasPreviousPage ? "" : "disabled")">
+                            <button class="page-link"
+                                    disabled="@(!paginatedFailureDTO.HasPreviousPage)"
+                                    @onclick="() => OnPreviousPage()">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        </li>
+                        @for (int i = 1; i <= paginatedFailureDTO.TotalPages; i++)
+                        {
+                            int currentPage = i;
+                            <li class="page-item
+                            @(i == paginatedFailureDTO.PageIndex ? "active" : "")">
+                                <button class="page-link"
+                                        onclick=@(() => OnPageSelected(currentPage))>
+                                    @i
+                                </button>
+                            </li>
+                        }
+                        <li class="page-item
+                        @(paginatedFailureDTO.HasNextPage ? "" : "disabled")">
+                            <button class="page-link"
+                                    disabled="@(!paginatedFailureDTO.HasNextPage)"
+                                    @onclick="() => OnNextPage()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <EmptyProject.Components.Layout.FooterDashboard></EmptyProject.Components.Layout.FooterDashboard>
+</div>
+
+@code {
+    #region Properties
+    public List<Menu?> lstMenuResult { get; set; }
+
+    public int TotalRows { get; set; } = 0;
+
+    public string? ChosenView { get; set; }
+
+    public bool checkStrict { get; set; }
+
+    public string TextToSearch { get; set; } = "";
+
+    public string ErrorMessage { get; set; } = "";
+
+    public string SuccessMessage { get; set; } = "";
+
+    public bool ShowDownloadButtonForExcel { get; set; }
+    public bool ShowDownloadButtonForPDF { get; set; }
+    public bool ShowDownloadButtonForCSV { get; set; }
+
+    public string? DownloadPathForExcel { get; set; }
+    public string? DownloadPathForPDF { get; set; }
+    public string? DownloadPathForCSV { get; set; }
+
+    public User? User;
+
+    public Failure? Failure;
+
+    paginatedFailureDTO? paginatedFailureDTO;
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            //Look for saved user in shared component, simulates a session
+            User = StateContainer.User == null ? new() : StateContainer.User;
+
+            lstMenuResult = [];
+
+            paginatedFailureDTO = new();
+            paginatedFailureDTO.lstFailure = [];
+
+            if (User != null)
+            {
+                if (User.UserId != 0)
+                {
+                    //Logged user
+
+                    List<Menu?> lstMenu = await menuRepository
+                                                    .GetAll(CancellationToken.None);
+
+                    lstMenuResult = await rolemenuRepository
+                                            .GetAllByRoleId(User.RoleId, lstMenu);
+
+                    paginatedFailureDTO = await failureRepository
+                                                .GetAllByFailureIdPaginated(
+                                                    "",
+                                                    checkStrict,
+                                                    1,
+                                                    15,
+                                                    CancellationToken.None);
+
+                    TotalRows = await failureRepository
+                                        .Count(CancellationToken.None);
+
+                    ChosenView = "list";
+                }
+                else
+                {
+                    //Not logged user
+
+                    //Redirect to...
+                    NavigationManager.NavigateTo("Login");
+                }
+            }
+            else
+            {
+                //Impossible
+            }
+
+            base.OnInitialized();
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+
+    }
+
+    #region Events
+    private async void SearchText(ChangeEventArgs args)
+    {
+        try
+        {
+            //Basic configuration
+            SuccessMessage = "";
+
+            TextToSearch = args.Value.ToString();
+
+            paginatedFailureDTO = await failureRepository
+                                        .GetAllByFailureIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            1,
+                                            15,
+                                            CancellationToken.None);
+
+            TotalRows = await failureRepository
+                    .Count(CancellationToken.None);
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+
+    }
+
+    async Task OnPreviousPage()
+    {
+        if (paginatedFailureDTO.HasPreviousPage)
+        {
+            paginatedFailureDTO = await failureRepository
+                                        .GetAllByFailureIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            (paginatedFailureDTO.PageIndex - 1),
+                                            paginatedFailureDTO.PageSize,
+                                            CancellationToken.None);
+        }
+
+        TotalRows = await failureRepository
+                            .Count(CancellationToken.None);
+
+        //Re-render the page
+        await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+    }
+
+    async Task OnPageSelected(int pageIndex)
+    {
+        paginatedFailureDTO = paginatedFailureDTO = await failureRepository
+                                                        .GetAllByFailureIdPaginated(
+                                                            TextToSearch,
+                                                            checkStrict,
+                                                            pageIndex,
+                                                            paginatedFailureDTO.PageSize,
+                                                            CancellationToken.None);
+
+        TotalRows = await failureRepository
+                            .Count(CancellationToken.None);
+
+        //Re-render the page
+        await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+    }
+
+    async Task OnNextPage()
+    {
+        if (paginatedFailureDTO.HasNextPage)
+        {
+            paginatedFailureDTO = await failureRepository
+                                        .GetAllByFailureIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            (paginatedFailureDTO.PageIndex + 1),
+                                            paginatedFailureDTO.PageSize,
+                                            CancellationToken.None);
+        }
+
+        TotalRows = await failureRepository
+                            .Count(CancellationToken.None);
+
+        //Re-render the page
+        await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+    }
+
+    private async void ChangeView(string chosenView)
+    {
+        ChosenView = chosenView;
+
+        //Re-render the page
+        await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+    }
+
+    private async void Delete(int failureId)
+    {
+        try
+        {
+            await failureRepository.DeleteByFailureId(failureId, CancellationToken.None);
+
+            paginatedFailureDTO = await failureRepository
+                                        .GetAllByFailureIdPaginated(
+                                            TextToSearch,
+                                            checkStrict,
+                                            1,
+                                            15, 
+                                            CancellationToken.None);
+
+            TotalRows = await failureRepository
+                                .Count(CancellationToken.None);
+
+            TextToSearch = "";
+
+            SuccessMessage = "Register deleted correctly";
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+    #endregion
+
+    #region Conversions
+    private async void ConvertToExcel()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+
+            using var Book = new XLWorkbook();
+
+            DataTable dtFailure = new DataTable();
+            dtFailure.TableName = "Failure";
+
+            //We define another DataTable dtFailureCopy to avoid issue related to DateTime conversion
+            DataTable dtFailureCopy = new DataTable();
+            dtFailureCopy.TableName = "Failure";
+
+            #region Define columns for dtFailureCopy
+            DataColumn dtColumnFailureIdFordtFailureCopy = new DataColumn();
+            dtColumnFailureIdFordtFailureCopy.DataType = typeof(string);
+            dtColumnFailureIdFordtFailureCopy.ColumnName = "FailureId";
+            dtFailureCopy.Columns.Add(dtColumnFailureIdFordtFailureCopy);
+
+            DataColumn dtColumnActiveFordtFailureCopy = new DataColumn();
+            dtColumnActiveFordtFailureCopy.DataType = typeof(string);
+            dtColumnActiveFordtFailureCopy.ColumnName = "Active";
+            dtFailureCopy.Columns.Add(dtColumnActiveFordtFailureCopy);
+
+            DataColumn dtColumnDateTimeCreationFordtFailureCopy = new DataColumn();
+            dtColumnDateTimeCreationFordtFailureCopy.DataType = typeof(string);
+            dtColumnDateTimeCreationFordtFailureCopy.ColumnName = "DateTimeCreation";
+            dtFailureCopy.Columns.Add(dtColumnDateTimeCreationFordtFailureCopy);
+
+            DataColumn dtColumnDateTimeLastModificationFordtFailureCopy = new DataColumn();
+            dtColumnDateTimeLastModificationFordtFailureCopy.DataType = typeof(string);
+            dtColumnDateTimeLastModificationFordtFailureCopy.ColumnName = "DateTimeLastModification";
+            dtFailureCopy.Columns.Add(dtColumnDateTimeLastModificationFordtFailureCopy);
+
+            DataColumn dtColumnUserCreationIdFordtFailureCopy = new DataColumn();
+            dtColumnUserCreationIdFordtFailureCopy.DataType = typeof(string);
+            dtColumnUserCreationIdFordtFailureCopy.ColumnName = "UserCreationId";
+            dtFailureCopy.Columns.Add(dtColumnUserCreationIdFordtFailureCopy);
+
+            DataColumn dtColumnUserLastModificationIdFordtFailureCopy = new DataColumn();
+            dtColumnUserLastModificationIdFordtFailureCopy.DataType = typeof(string);
+            dtColumnUserLastModificationIdFordtFailureCopy.ColumnName = "UserLastModificationId";
+            dtFailureCopy.Columns.Add(dtColumnUserLastModificationIdFordtFailureCopy);
+
+            DataColumn dtColumnMessageFordtFailureCopy = new DataColumn();
+            dtColumnMessageFordtFailureCopy.DataType = typeof(string);
+            dtColumnMessageFordtFailureCopy.ColumnName = "Message";
+            dtFailureCopy.Columns.Add(dtColumnMessageFordtFailureCopy);
+
+            DataColumn dtColumnEmergencyLevelFordtFailureCopy = new DataColumn();
+            dtColumnEmergencyLevelFordtFailureCopy.DataType = typeof(string);
+            dtColumnEmergencyLevelFordtFailureCopy.ColumnName = "EmergencyLevel";
+            dtFailureCopy.Columns.Add(dtColumnEmergencyLevelFordtFailureCopy);
+
+            DataColumn dtColumnStackTraceFordtFailureCopy = new DataColumn();
+            dtColumnStackTraceFordtFailureCopy.DataType = typeof(string);
+            dtColumnStackTraceFordtFailureCopy.ColumnName = "StackTrace";
+            dtFailureCopy.Columns.Add(dtColumnStackTraceFordtFailureCopy);
+
+            DataColumn dtColumnSourceFordtFailureCopy = new DataColumn();
+            dtColumnSourceFordtFailureCopy.DataType = typeof(string);
+            dtColumnSourceFordtFailureCopy.ColumnName = "Source";
+            dtFailureCopy.Columns.Add(dtColumnSourceFordtFailureCopy);
+
+            DataColumn dtColumnCommentFordtFailureCopy = new DataColumn();
+            dtColumnCommentFordtFailureCopy.DataType = typeof(string);
+            dtColumnCommentFordtFailureCopy.ColumnName = "Comment";
+            dtFailureCopy.Columns.Add(dtColumnCommentFordtFailureCopy);
+
+            
+            #endregion
+
+            dtFailure = await failureRepository.GetAllInDataTable(CancellationToken.None);
+
+            foreach (DataRow DataRow in dtFailure.Rows)
+            {
+                dtFailureCopy.Rows.Add(DataRow.ItemArray);
+            }
+
+            var Sheet = Book.Worksheets.Add(dtFailureCopy);
+
+            Sheet.ColumnsUsed().AdjustToContents();
+
+            DownloadPathForExcel = $@"wwwroot/Downloads/ExcelFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.xlsx";
+            Book.SaveAs(DownloadPathForExcel);
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForExcel = DownloadPathForExcel.Replace("wwwroot", "");
+
+            ShowDownloadButtonForExcel = true;
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+                        
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void ConvertToCSV()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+
+            List<Failure?> lstFailure = await failureRepository
+                                    .GetAll(CancellationToken.None);
+
+            DownloadPathForCSV = $@"wwwroot/Downloads/CSVFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.csv";
+
+            using (var Writer = new StreamWriter(DownloadPathForCSV))
+            using (var CsvWriter = new CsvWriter(Writer,
+                CultureInfo.InvariantCulture))
+            {
+                CsvWriter.WriteRecords(lstFailure);
+            }
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForCSV = DownloadPathForCSV.Replace("wwwroot", "");
+
+            ShowDownloadButtonForCSV = true;
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);             
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+            
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void ConvertToPDF()
+    {
+        try
+        {
+            //Set initial state
+            ErrorMessage = "";
+            string ProjectName = "EmptyProject";
+            string Table = "Failure";
+            var Renderer = new HtmlToPdf();
+            string RowsAsHTML = "";
+
+            List<Failure?> lstFailure = await failureRepository
+                                    .GetAll(CancellationToken.None);
+
+            DownloadPathForPDF = $@"wwwroot/Downloads/PDFFiles/{DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss_fff")}.pdf";
+
+            foreach (Failure? Failure in lstFailure)
+            {
+                RowsAsHTML += $@"{Failure?.ToStringOnlyValuesForHTML()}";
+            }
+
+            Renderer.RenderHtmlAsPdf($@"<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""88%"" style=""width: 88% !important; min-width: 88%; max-width: 88%;"">
+    <tr>
+    <td align=""left"" valign=""top"">
+        <font face=""'Source Sans Pro', sans-serif"" color=""#1a1a1a"" style=""font-size: 52px; line-height: 55px; font-weight: 300; letter-spacing: -1.5px;"">
+            <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #1a1a1a; font-size: 52px; line-height: 55px; font-weight: 300; letter-spacing: -1.5px;"">Mikromatica</span>
+        </font>
+        <div style=""height: 25px; line-height: 25px; font-size: 23px;"">&nbsp;</div>
+        <font face=""'Source Sans Pro', sans-serif"" color=""#4c4c4c"" style=""font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;"">
+            <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #4c4c4c; font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;"">Registers of Failure</span>
+        </font>
+        <div style=""height: 35px; line-height: 35px; font-size: 33px;"">&nbsp;</div>
+    </td>
+    </tr>
+</table>
+<br>
+<table cellpadding=""0"" cellspacing=""0"" border=""0"" width=""100%"" style=""width: 100% !important; min-width: 100%; max-width: 100%;"">
+    <tr>
+        <th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">FailureId&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Active&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">DateTimeCreation&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">DateTimeLastModification&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">UserCreationId&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">UserLastModificationId&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Message&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">EmergencyLevel&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">StackTrace&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Source&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th><th align=""left"" valign=""top"" style=""border-width: 1px; border-style: solid; border-color: #e8e8e8; border-top: none; border-left: none; border-right: none;"">
+            <font face=""'Source Sans Pro', sans-serif"" color=""#000000"" style=""font-size: 20px; line-height: 28px; font-weight: 600;"">
+                <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #000000; font-size: 20px; line-height: 28px; font-weight: 600;"">Comment&nbsp;&nbsp;&nbsp;</span>
+            </font>
+            <div style=""height: 10px; line-height: 10px; font-size: 8px;"">&nbsp;</div>
+        </th>
+    </tr>
+    {RowsAsHTML}
+</table>
+<br>
+<font face=""'Source Sans Pro', sans-serif"" color=""#868686"" style=""font-size: 17px; line-height: 20px;"">
+    <span style=""font-family: 'Source Sans Pro', Arial, Tahoma, Geneva, sans-serif; color: #868686; font-size: 17px; line-height: 20px;"">Printed on: {DateTime.Now}</span>
+</font>
+").SaveAs(DownloadPathForPDF);
+
+            ShowDownloadButtonForPDF = true;
+
+            //Delete wwwroot from path to download correctly
+            DownloadPathForPDF = DownloadPathForPDF.Replace("wwwroot", "");
+
+            //Re-render the page
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+            {
+                Active = true,
+                DateTimeCreation = DateTime.Now,
+                DateTimeLastModification = DateTime.Now,
+                UserCreationId = 1,
+                UserLastModificationId = 1,
+                EmergencyLevel = 1,
+                Comment = "",
+                Message = ex.Message,
+                Source = ex.Source,
+                StackTrace = ex.StackTrace
+            };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            ErrorMessage = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+
+    }
+    #endregion
+}

@@ -1,0 +1,291 @@
+
+@page "/BasicCore/FailurePage/{FailureId:int}"
+@using EmptyProject.Areas.BasicCore.Repositories;
+@inject FailureRepository failureRepository;
+
+@if (FailureId == 0)
+{
+    <PageTitle>Add failure - EmptyProject</PageTitle>
+}
+else
+{
+    <PageTitle>Edit failure - EmptyProject</PageTitle>
+}
+
+<EmptyProject.Components.Layout.NavBarVerticalDashboard lstMenuResult="lstMenuResult"></EmptyProject.Components.Layout.NavBarVerticalDashboard>
+
+<div class="main-content position-relative max-height-vh-100 h-100">
+    <EmptyProject.Components.Layout.NavBarHorizontalDashboard></EmptyProject.Components.Layout.NavBarHorizontalDashboard>
+    <div class="container-fluid px-2 px-md-4">
+        <div class="page-header min-height-300 border-radius-xl mt-4"
+             style="background-image: url('assets/img/illustrations/Landscape2.jpg');">
+            <span class="mask bg-gradient-primary opacity-6"></span>
+        </div>
+        <div class="card card-body mx-3 mx-md-4 mt-n6">
+            <div class="card-header mb-0 pb-0 bg-white">
+                <h1 class="mb-3">
+                    @if(FailureId == 0)
+                    {
+                        <span>Add failure</span>
+                    }
+                    else
+                    {
+                        <span>Edit failure</span>
+                    }
+                </h1>
+                <NavLink class="btn btn-outline-info" href="BasicCore/FailurePage">
+                    <span class="fas fa-chevron-left"></span>
+                    &nbsp;Go back
+                </NavLink>
+            </div>
+            <div class="card-body px-0">
+                <form method="post" @onsubmit="Submit"
+                      @formname="failure-form" class="mb-4">
+                    <AntiforgeryToken />
+                    <!--Message-->
+                    <div class="mb-3">
+                        <label for="message"
+                               class="input-group input-group-static">
+                            Message
+                        </label>
+                        <textarea rows="10"
+                            class="form-control"
+                            @bind="Failure!.Message"
+                            
+                            id="message">
+                        </textarea>
+                    </div>
+                    <!--EmergencyLevel-->
+                    <div class="mb-3">
+                        <label for="emergencylevel"
+                               class="input-group input-group-static">
+                            EmergencyLevel
+                        </label>
+                        <input type="number"
+                               step="1"
+                               min="0" 
+                               max="10" 
+                               id="emergencylevel"
+                               class="form-control"
+                               
+                               @bind="Failure!.EmergencyLevel" />
+                    </div>
+                    <!--StackTrace-->
+                    <div class="mb-3">
+                        <label for="stacktrace"
+                               class="input-group input-group-static">
+                            StackTrace
+                        </label>
+                        <textarea rows="10"
+                            class="form-control"
+                            @bind="Failure!.StackTrace"
+                            
+                            id="stacktrace">
+                        </textarea>
+                    </div>
+                    <!--Source-->
+                    <div class="mb-3">
+                        <label for="source"
+                               class="input-group input-group-static">
+                            Source
+                        </label>
+                        <textarea rows="10"
+                            class="form-control"
+                            @bind="Failure!.Source"
+                            
+                            id="source">
+                        </textarea>
+                    </div>
+                    <!--Comment-->
+                    <div class="mb-3">
+                        <label for="comment"
+                               class="input-group input-group-static">
+                            Comment
+                        </label>
+                        <textarea rows="10"
+                            class="form-control"
+                            @bind="Failure!.Comment"
+                            
+                            id="comment">
+                        </textarea>
+                    </div>
+                    
+                    <hr />
+                    <button id="btn-submit" type="submit"
+                            class="btn bg-gradient-primary">
+                        <i class="fas fa-pen"></i>
+                        @if (FailureId == 0)
+                        {
+                            <span>Add</span>
+                        }
+                        else
+                        {
+                            <span>Edit</span>
+                        }
+                    </button>
+                    <NavLink class="btn btn-outline-info" href="BasicCore/FailurePage">
+                        <span class="fas fa-chevron-left"></span>
+                        &nbsp;Go back
+                    </NavLink>
+                </form>
+                @if (MessageForForm != "")
+                {
+                    <span class="text-danger">
+                        @((MarkupString)MessageForForm)
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <EmptyProject.Components.Layout.FooterDashboard></EmptyProject.Components.Layout.FooterDashboard>
+</div>
+
+@code {
+    #region Properties
+    public List<Menu?> lstMenuResult { get; set; }
+
+    public List<Role?> lstRole { get; set; }
+
+    [Parameter]
+    public int FailureId { get; set; }
+
+    public string MessageForForm { get; set; } = "";
+
+    [SupplyParameterFromForm]
+    public Failure? Failure { get; set; }
+
+    public User? User { get; set; }
+
+    
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            //Look for saved user in shared component, simulates a session
+            User = StateContainer.User == null ? new() : StateContainer.User;
+
+            lstMenuResult = [];
+            Failure = new();
+
+            if (User != null)
+            {
+                if (User.UserId != 0)
+                {
+                    //Logged user
+
+                    List<Menu?> lstMenu = await menuRepository
+                                        .GetAll(CancellationToken.None);
+
+                    lstMenuResult = await rolemenuRepository
+                                        .GetAllByRoleId(User.RoleId, lstMenu);
+
+                    lstRole = await roleRepository.GetAll(CancellationToken.None);
+
+                    if (FailureId == 0)
+                    {
+                        //Create new Failure
+                        Failure = new();
+                    }
+                    else
+                    {
+                        //Edit user
+                        //Populate user data
+                        Failure = await failureRepository
+                                    .GetByFailureId(FailureId, CancellationToken.None);
+                    }
+                }
+                else
+                {
+                    //Not logged user
+
+                    //Redirect to...
+                    NavigationManager.NavigateTo("Login");
+                }
+            }
+            else
+            {
+                //Impossible
+            }
+
+            base.OnInitialized();
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+                {
+                    Active = true,
+                    DateTimeCreation = DateTime.Now,
+                    DateTimeLastModification = DateTime.Now,
+                    UserCreationId = 1,
+                    UserLastModificationId = 1,
+                    EmergencyLevel = 1,
+                    Comment = "",
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace
+                };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            MessageForForm = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+    }
+
+    private async void Submit()
+    {
+        try
+        {
+            if (FailureId == 0)
+            {
+                //Create new Failure
+                Failure.FailureId = 0;
+
+                await failureRepository
+                        .Add(Failure, CancellationToken.None);
+            }
+            else
+            {
+                //Update data
+                await failureRepository
+                            .Update(Failure, CancellationToken.None);
+            }
+
+            //Redirect to users page
+            NavigationManager.NavigateTo("BasicCore/FailurePage");
+        }
+        catch (Exception ex)
+        {
+            Failure failure = new()
+                {
+                    Active = true,
+                    DateTimeCreation = DateTime.Now,
+                    DateTimeLastModification = DateTime.Now,
+                    UserCreationId = 1,
+                    UserLastModificationId = 1,
+                    EmergencyLevel = 1,
+                    Comment = "",
+                    Message = ex.Message,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace
+                };
+
+            await failureRepository.Add(failure, CancellationToken.None);
+
+            MessageForForm = $@"There was a mistake. Try again.
+                             Error message: {ex.Message}";
+        }
+        finally
+        {
+            //Re-render the page to show ScannedText
+            await InvokeAsync(() => StateHasChanged()).ConfigureAwait(false);
+        }
+    }
+
+    
+}
+
+

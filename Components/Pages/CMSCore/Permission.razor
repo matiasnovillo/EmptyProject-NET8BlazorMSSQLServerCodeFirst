@@ -29,54 +29,63 @@
                     </h4>
                     <hr />
                     <p>Choose a role</p>
-                    @foreach (Role role in lstAllRole)
+                    @if (lstAllRole != null)
                     {
-                        <button class="btn bg-gradient-primary mx-2"
-                            @onclick="() => ChooseRole(role.Name)">
-                            @role.Name
-                        </button>
+                        @foreach (Role role in lstAllRole)
+                        {
+                            <button class="btn bg-gradient-primary mx-2"
+                                    @onclick="() => ChooseRole(role.Name)">
+                                @role.Name
+                            </button>
+                        }
                     }
                     <hr />
-                    @if (lstMenuWithState.Count == 0)
+                    @if (lstMenuWithState != null)
                     {
-                        <div class="d-flex justify-content-center">
-                            <a href="https://www.shutterstock.com/es/image-photo/astronaut-elements-this-image-furnished-by-1022034061"
-                               target="_blank">
-                                <img src="img/BasicCore/Astronaut.jpg"
-                                     alt="login-first">
-                            </a>
-                        </div>
-                    }
-                    else
-                    {
-                        @foreach (MenuWithStateDTO menu in lstMenuWithState)
+                        @if (lstMenuWithState.Count == 0)
                         {
-                            if (menu.IsSelected)
+                            <div class="d-flex justify-content-center">
+                                <a href="https://www.shutterstock.com/es/image-photo/astronaut-elements-this-image-furnished-by-1022034061"
+                                   target="_blank">
+                                    <img src="img/BasicCore/Astronaut.jpg"
+                                         alt="login-first">
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            @if (lstMenuWithState != null)
                             {
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input"
-                                            type="checkbox"
-                                            checked
-                                            @onchange="() => Submit(menu.MenuId, menu.IsSelected)"
-                                            id="@menu.Name">
-                                    <label class="form-check-label"
-                                            for="@menu.Name">
-                                        @menu.Name
-                                    </label>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input"
-                                            type="checkbox"
-                                            @onchange="() => Submit(menu.MenuId, menu.IsSelected)"
-                                            id="@menu.Name">
-                                    <label class="form-check-label"
-                                            for="@menu.Name">
-                                        @menu.Name
-                                    </label>
-                                </div>
+                                @foreach (MenuWithStateDTO menu in lstMenuWithState)
+                                {
+                                    if (menu.IsSelected)
+                                    {
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   checked
+                                                   @onchange="() => Submit(menu.MenuId, menu.IsSelected)"
+                                                   id="@menu.Name">
+                                            <label class="form-check-label"
+                                                   for="@menu.Name">
+                                                @menu.Name
+                                            </label>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   @onchange="() => Submit(menu.MenuId, menu.IsSelected)"
+                                                   id="@menu.Name">
+                                            <label class="form-check-label"
+                                                   for="@menu.Name">
+                                                @menu.Name
+                                            </label>
+                                        </div>
+                                    }
+                                }
                             }
                         }
                     }

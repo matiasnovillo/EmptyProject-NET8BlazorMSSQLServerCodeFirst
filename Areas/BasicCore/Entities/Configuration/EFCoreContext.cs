@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using EmptyProject.Areas.CMSCore.Entities;
 using EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration;
+using EmptyProject.Areas.BasicCore.Entities.EntitiesConfiguration;
 
 namespace EmptyProject.Areas.BasicCore.Entities.Configuration
 {
@@ -12,6 +13,8 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
         public DbSet<Role> Role { get; set; }
         public DbSet<Menu> Menu { get; set; }
         public DbSet<RoleMenu> RoleMenu { get; set; }
+        public DbSet<Failure> Failure { get; set; }
+        public DbSet<Parameter> Parameter { get; set; }
 
         public EFCoreContext(IConfiguration configuration)
         {
@@ -38,6 +41,8 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                 modelBuilder.ApplyConfiguration(new RoleConfiguration());
                 modelBuilder.ApplyConfiguration(new MenuConfiguration());
                 modelBuilder.ApplyConfiguration(new RoleMenuConfiguration());
+                modelBuilder.ApplyConfiguration(new FailureConfiguration());
+                modelBuilder.ApplyConfiguration(new ParameterConfiguration());
 
                 modelBuilder.Entity<User>().HasData(new User
                 {
@@ -77,7 +82,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "Failure",
                     MenuFatherId = 1,
                     Order = 0,
-                    URLPath = "/BasicCore/Failure",
+                    URLPath = "/BasicCore/FailurePage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -88,7 +93,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "Parameter",
                     MenuFatherId = 1,
                     Order = 0,
-                    URLPath = "/BasicCore/Parameter",
+                    URLPath = "/BasicCore/ParameterPage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -110,7 +115,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "City",
                     MenuFatherId = 4,
                     Order = 0,
-                    URLPath = "/BasicCulture/City",
+                    URLPath = "/BasicCulture/CityPage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -121,7 +126,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "State",
                     MenuFatherId = 4,
                     Order = 0,
-                    URLPath = "/BasicCulture/State",
+                    URLPath = "/BasicCulture/StatePage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -132,7 +137,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "Country",
                     MenuFatherId = 4,
                     Order = 0,
-                    URLPath = "/BasicCulture/Country",
+                    URLPath = "/BasicCulture/CountryPage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -143,7 +148,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "Planet",
                     MenuFatherId = 4,
                     Order = 0,
-                    URLPath = "/BasicCulture/Planet",
+                    URLPath = "/BasicCulture/PlanetPage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -154,7 +159,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "Sex",
                     MenuFatherId = 4,
                     Order = 0,
-                    URLPath = "/BasicCulture/Sex",
+                    URLPath = "/BasicCulture/SexPage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -176,7 +181,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "User",
                     MenuFatherId = 10,
                     Order = 0,
-                    URLPath = "/CMSCore/User",
+                    URLPath = "/CMSCore/UserPage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -187,7 +192,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "Role",
                     MenuFatherId = 10,
                     Order = 0,
-                    URLPath = "/CMSCore/Role",
+                    URLPath = "/CMSCore/RolePage",
                     IconURLPath = "",
                     Active = true
                 });
@@ -198,7 +203,7 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
                     Name = "Menu",
                     MenuFatherId = 10,
                     Order = 0,
-                    URLPath = "/CMSCore/Menu",
+                    URLPath = "/CMSCore/MenuPage",
                     IconURLPath = "",
                     Active = true
                 });
