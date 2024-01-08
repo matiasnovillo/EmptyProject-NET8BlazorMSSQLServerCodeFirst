@@ -134,6 +134,11 @@ namespace EmptyProject.Areas.CMSCore.Repositories
                 PageSize = pageSize
             };
         }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
         #endregion
 
         #region Non-Queries
