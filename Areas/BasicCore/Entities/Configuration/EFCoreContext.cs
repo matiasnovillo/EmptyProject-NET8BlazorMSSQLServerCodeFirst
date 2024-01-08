@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using EmptyProject.Areas.CMSCore.Entities;
 using EmptyProject.Areas.CMSCore.Entities.EntitiesConfiguration;
-using EmptyProject.Areas.Testing.Entities;
-using EmptyProject.Areas.Testing.Entities.EntitiesConfiguration;
 
 namespace EmptyProject.Areas.BasicCore.Entities.Configuration
 {
@@ -14,7 +12,6 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
         public DbSet<Role> Role { get; set; }
         public DbSet<Menu> Menu { get; set; }
         public DbSet<RoleMenu> RoleMenu { get; set; }
-        public DbSet<Test> Test { get; set; }
 
         public EFCoreContext(IConfiguration configuration)
         {
@@ -38,7 +35,6 @@ namespace EmptyProject.Areas.BasicCore.Entities.Configuration
         {
             try
             {
-                modelBuilder.ApplyConfiguration(new TestConfiguration());
                 modelBuilder.ApplyConfiguration(new RoleConfiguration());
                 modelBuilder.ApplyConfiguration(new MenuConfiguration());
                 modelBuilder.ApplyConfiguration(new RoleMenuConfiguration());

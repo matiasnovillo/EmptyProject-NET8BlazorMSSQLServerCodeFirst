@@ -25,9 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\RRHH\DTOs\" />
     <Folder Include="Backup\" />
     <Folder Include="CommonFunctions\" />
+    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\Downloads\ExcelFiles\" />
     <Folder Include="wwwroot\Downloads\CSVFiles\" />
     <Folder Include="wwwroot\Downloads\PDFFiles\" />
